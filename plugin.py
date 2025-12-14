@@ -18,7 +18,15 @@
 <plugin key="Frisquet-connect" name="Frisquet-Connect plugin for Domoticz" author="Krakinou" version="0.0.1" wikilink="https://wiki.domoticz.com/Plugins">
     <description>
         <h2>Frisquet-connect pour Domoticz</h2><br/>
-        Version Alpha d'un plugin frisquet-Connect pour Domoticz permettant de controler sa chaudiÃ¨re si un Frisquet-Connect est connectÃ©
+        Version Alpha d'un plugin frisquet-Connect pour Domoticz permettant de controler sa chaudière si un Frisquet-Connect est connecté
+        Les dispositifs suivants sont créés automatiquement par le plugin :
+        <ul style="list-style-type:square">
+            <li>Temperature de zone</li>
+            <li>Consigne Hors-Gel de zone</li>
+            <li>Consigne Réduit de zone</li>
+            <li>Consigne Confort de zone</li>
+        </ul>
+        
     </description>
     <params>
         <param field="Username" label="Username" required="true"/>
@@ -43,7 +51,7 @@ import Domoticz as Domoticz
 import time
 import json
 import const
-import frisquetAPI
+#import frisquetAPI
 
 
 class FrisquetConnectPlugin:
@@ -125,7 +133,7 @@ class FrisquetConnectPlugin:
 
     def ensure_token(self):
         if not self.is_token_valid():
-            Domoticz.Debug("Token invalide ou expirÃ©, rÃ©cupÃ©ration d'un nouveau token")
+            Domoticz.Debug("Token invalide ou expiré, récupération d'un nouveau token")
             self.connectToFrisquet()
 
     def onStop(self):
@@ -207,9 +215,9 @@ class FrisquetConnectPlugin:
                 if (Status != 200):
                     if jsonData is not None and jsonData.get("message"):
                         message = str(jsonData["message"])
-                        Domoticz.Log("Le serveur a renvoyÃ© une erreur  " + str(Status) + " - " + message)
+                        Domoticz.Log("Le serveur a renvoyé une erreur  " + str(Status) + " - " + message)
                     else:
-                        Domoticz.Log("Le serveur a renvoyÃ© une erreur  " + str(Status))
+                        Domoticz.Log("Le serveur a renvoyé une erreur  " + str(Status))
 
             case _:
                 Domoticz.Error("Connection inconnue")
@@ -234,8 +242,8 @@ class FrisquetConnectPlugin:
 #1 ECS
 #Zone 1 : 11 TAMB, 12 CONS_CONF, 13 CONS_RED, 14, CONS_HG
 #Zone 2:  21 TAMB, 22 CONS_CONF, etc.
-#              'MODE': 8,
-#              'SELECTEUR': 8,
+#          'MODE': 8,
+#          'SELECTEUR': 8,
 #	       'TAMB': 150, TempÃ©rature de la zone
 #	       'CAMB': 150,
 #	       'DERO': False, DÃ©rogation
@@ -253,7 +261,7 @@ class FrisquetConnectPlugin:
             ]
         for device_zone in devices_zone:
             if not Devices or device_zone["unit"] not in Devices:
-                Domoticz.Debug("Creation du device " + device_zone["name"])
+                Domoticz.Debug("Création du device " + device_zone["name"])
                 Domoticz.Device(Name=device_zone["name"], Unit=device_zone["unit"], TypeName=device_zone["TypeName"]).Create()
 
     def onCommand(self, Unit, Command, Level, Hue):
