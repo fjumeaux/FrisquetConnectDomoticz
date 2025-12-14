@@ -3,7 +3,6 @@
 # Author: Krakinou
 #
 #TODO : Derogation
-#       ECS
 #       Numéro chaudiere optionnelle
 #       Mode et selecteur
 #       CAMB
@@ -15,15 +14,16 @@
 #       programmation / jour
 #       alarmes
 """
-<plugin key="Frisquet-connect" name="Frisquet-Connect plugin" author="Krakinou" version="0.0.1" wikilink="https://wiki.domoticz.com/Plugins">
+<plugin key="Frisquet-connect" name="Frisquet-Connect" author="Krakinou" version="0.0.2" wikilink="https://wiki.domoticz.com/Plugins">
     <description>
         <h2>Frisquet-connect pour Domoticz</h2><br/>
-        Version Alpha d'un plugin frisquet-Connect pour Domoticz permettant de controler sa chaudiere si un Frisquet-Connect est connecte. Les dispositifs suivants sont cr��s automatiquement par le plugin :
+        Version Alpha d'un plugin frisquet-Connect pour Domoticz permettant de controler sa chaudiere si un Frisquet-Connect est connecte. Les dispositifs suivants sont crees automatiquement par le plugin :
         <ul style="list-style-type:square">
             <li>Temperature de zone</li>
             <li>Consigne Hors-Gel de zone</li>
             <li>Consigne Reduit de zone</li>
             <li>Consigne Confort de zone</li>
+            <li>Réglage du mode ECS (Eau Chaude Sanitaire)</li>
         </ul>
     </description>
     <params>
@@ -201,10 +201,10 @@ class FrisquetConnectPlugin:
             case "connectToFrisquetAPI":
                 if (Status == 201):
                     self.auth_token = self.incomingPayload["token"]
-                    Domoticz.Log("token received : " + self.auth_token)
+                    Domoticz.Debug("token received : " + self.auth_token)
                     self.token_expiry = time.time() + 3600
                     self.num_chaudiere = self.incomingPayload["utilisateur"]["sites"][0]["identifiant_chaudiere"]
-                    Domoticz.Log("numero chaudiere : " + self.num_chaudiere)
+                    Domoticz.Debug("numero chaudiere : " + self.num_chaudiere)
                 elif (Status == 403):
                     Domoticz.Error("Erreur de connexion : Nom ou mot de passe incorrect?")
                     self.auth_token = None
@@ -264,9 +264,6 @@ class FrisquetConnectPlugin:
 #	       'TAMB': 150, Température de la zone
 #	       'CAMB': 150,
 #	       'DERO': False, Dérogation
-#	       'CONS_RED': 170, Thermostat Consommation réduite
-#	       'CONS_CONF': 190, Thermostat consommation confort
-#	       'CONS_HG': 150, Thermostat consommation HG
 #	       'ACTIVITE_BOOST': False
         num_zone = str(zone["numero"])
         nom_zone = zone["nom"]
