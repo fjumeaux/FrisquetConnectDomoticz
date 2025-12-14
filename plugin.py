@@ -18,11 +18,11 @@
 <plugin key="Frisquet-connect" name="Frisquet-Connect plugin" author="Krakinou" version="0.0.1" wikilink="https://wiki.domoticz.com/Plugins">
     <description>
         <h2>Frisquet-connect pour Domoticz</h2><br/>
-        Version Alpha d'un plugin frisquet-Connect pour Domoticz permettant de controler sa chaudi�re si un Frisquet-Connect est connect�. Les dispositifs suivants sont cr��s automatiquement par le plugin :
+        Version Alpha d'un plugin frisquet-Connect pour Domoticz permettant de controler sa chaudiere si un Frisquet-Connect est connecte. Les dispositifs suivants sont cr��s automatiquement par le plugin :
         <ul style="list-style-type:square">
             <li>Temperature de zone</li>
             <li>Consigne Hors-Gel de zone</li>
-            <li>Consigne R�duit de zone</li>
+            <li>Consigne Reduit de zone</li>
             <li>Consigne Confort de zone</li>
         </ul>
         
@@ -214,9 +214,9 @@ class FrisquetConnectPlugin:
                 if (Status != 200):
                     if jsonData is not None and jsonData.get("message"):
                         message = str(jsonData["message"])
-                        Domoticz.Log("Le serveur a renvoy� une erreur  " + str(Status) + " - " + message)
+                        Domoticz.Log("Le serveur a renvoye une erreur  " + str(Status) + " - " + message)
                     else:
-                        Domoticz.Log("Le serveur a renvoy� une erreur  " + str(Status))
+                        Domoticz.Log("Le serveur a renvoye une erreur  " + str(Status))
 
             case _:
                 Domoticz.Error("Connection inconnue")
@@ -253,14 +253,14 @@ class FrisquetConnectPlugin:
         num_zone = str(zone["numero"])
         nom_zone = zone["nom"]
         devices_zone = [
-            {"unit": int(num_zone + const.C_TAMB), "name": "Temp�rature " + nom_zone, "TypeName": "Temperature"},
-            {"unit": int(num_zone + const.C_CONS_RED), "name": "Consigne R�duit " + nom_zone, "TypeName": "Setpoint"},
+            {"unit": int(num_zone + const.C_TAMB), "name": "Temperature " + nom_zone, "TypeName": "Temperature"},
+            {"unit": int(num_zone + const.C_CONS_RED), "name": "Consigne Reduit " + nom_zone, "TypeName": "Setpoint"},
             {"unit": int(num_zone + const.C_CONS_CONF), "name": "Consigne Confort " + nom_zone, "TypeName": "Setpoint"},
             {"unit": int(num_zone + const.C_CONS_HG), "name": "Consigne Hors-Gel " + nom_zone, "TypeName": "Setpoint"}
             ]
         for device_zone in devices_zone:
             if not Devices or device_zone["unit"] not in Devices:
-                Domoticz.Debug("Cr�ation du device " + device_zone["name"])
+                Domoticz.Debug("Creation du device " + device_zone["name"])
                 Domoticz.Device(Name=device_zone["name"], Unit=device_zone["unit"], TypeName=device_zone["TypeName"]).Create()
 
     def onCommand(self, Unit, Command, Level, Hue):
