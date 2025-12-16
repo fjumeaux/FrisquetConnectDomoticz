@@ -319,9 +319,10 @@ class FrisquetConnectPlugin:
 
     def onHeartbeat(self):
         Domoticz.Debug("onHeartbeat called")
-        self.ensure_token()
-        if self.auth_token and self.num_chaudiere:
+        if self.is_token_valid() and self.num_chaudiere:
             self.getFrisquetData()
+        #on renouvelle le token à la fin du heartbeat pour éviter les problèmes entre la réponse du renouvellement et la nouvelle demande de données
+        self.ensure_token()
 
 
 global _plugin
