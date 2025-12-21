@@ -6,8 +6,6 @@ SITE_API="/api/v1/sites"
 ORDRES_API="/api/v1/ordres"
 
 #General Chaudiere
-C_MODE_ECS="1"
-
 MODE_ECS = [
     { "nom":"Stop",       "value_out":"5", "value_in":0,  "nValue":0},
     { "nom":"Eco+ Timer", "value_out":"4", "value_in":10, "nValue":1},
