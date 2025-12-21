@@ -61,10 +61,15 @@ class FrisquetConnectPlugin:
         self.auth_token = None
         self.token_expiry = 0
         self.num_chaudiere = None
-        self.ecs_in_to_out = {m["ecs_in"]: m["ecs_out"] for m in const.MODE_ECS}
-        self.ecs_out_to_in = {m["ecs_out"]: m["ecs_in"] for m in const.MODE_ECS}
-        self.ecs_in_to_nValue = {m["ecs_in"]: m["nValue"] for m in const.MODE_ECS}
-        self.ecs_out_to_nValue = {m["ecs_out"]: m["nValue"] for m in const.MODE_ECS}
+        #Mapping pour ECS
+        self.ecs_in    = {c["ecs_in"]:   c for c in const.MODE_ECS}
+        self.ecs_out   = {c["ecs_out"]:  c for c in const.MODE_ECS}
+        #Mapping pour mode Permanent
+        self.perm_in   = {c["perm_in"]:  c for c in const.MODE_PERM}
+        self.perm_out  = {c["perm_out"]: c for c in const.MODE_PERM}
+        #Mapping pour consigne
+        self.cons_nom  = {c["nom"]:  c for c in const.C_CONS}
+        self.cons_unit = {c["unit"]: c for c in const.C_CONS}
         return
 
     def onStart(self):
@@ -111,17 +116,12 @@ class FrisquetConnectPlugin:
         Domoticz.Debug("Starting Push Data")
         if Devices[Unit].Type == 242:
             payloadLevel = Level * 10
-            match str(Unit)[1]:
-                case "2": #Confort
-                    mode = "CONF"
-                case "3": #Reduit
-                    mode = "RED"
-                case "4": #HG
-                    mode = "HG"
-            payload = [{"cle":"CONS_" + mode + "_Z" + str(Unit)[0], "valeur":payloadLevel}]
+            cle=self.cons_unit(str(Unit)[1])["mode"]
+            #str(Unit)[0] correspond au numéro de la zone
+            payload = [{"cle":cle + str(Unit)[0], "valeur":payloadLevel}]
 
         if Devices[Unit].Type == 244:
-            payload = [{"cle":"MODE_ECS", "valeur": str(self.ecs_in_to_out.get(Level))}]
+            payload = [{"cle":"MODE_ECS", "valeur": str(self.ecs_in[Level]["ecs_out"])}]
 
         self.pendingPayload = json.dumps(payload)
         Domoticz.Debug("Payload to push : " + str(self.pendingPayload))
@@ -236,20 +236,24 @@ class FrisquetConnectPlugin:
     def updateDeviceFromFrisquetByZone(self, zone):
         num_zone = str(zone["numero"])
         devices_zone = [
-            { "unit": int(num_zone + const.C_TAMB), "nValue":0, "sValue":str(zone["carac_zone"]["TAMB"] / 10.0) },
-            { "unit": int(num_zone + const.C_CONS_RED), "nValue":0, "sValue":str(zone["carac_zone"]["CONS_RED"] / 10.0) },
-            { "unit": int(num_zone + const.C_CONS_HG), "nValue":0, "sValue":str(zone["carac_zone"]["CONS_HG"] / 10.0) },
-            { "unit": int(num_zone + const.C_CONS_CONF), "nValue":0, "sValue":str(zone["carac_zone"]["CONS_CONF"] / 10.0) }
+            { "unit": int(num_zone + const.C_TAMB),                       "nValue":0, "sValue":str(zone["carac_zone"]["TAMB"]      / 10.0) },
+            { "unit": int(num_zone + self.cons_nom["Reduit"]["unit"]),    "nValue":0, "sValue":str(zone["carac_zone"]["CONS_RED"]  / 10.0) },
+            { "unit": int(num_zone + self.cons_nom["Hors-Gel"]["unit"]),  "nValue":0, "sValue":str(zone["carac_zone"]["CONS_HG"]   / 10.0) },
+            { "unit": int(num_zone + self.cons_nom["Confort"]["unit"]),   "nValue":0, "sValue":str(zone["carac_zone"]["CONS_CONF"] / 10.0) },
+            { "unit": int(num_zone + self.cons_nom["Selecteur"]["unit"]), \
+                                                                     "nValue":self.perm_out[str(zone["carac_zone"]["MODE"])]["nValue"], \
+                                                                     "sValue":self.perm_out[str(zone["carac_zone"]["MODE"])]["perm_in"]}
             ]
         for device_zone in devices_zone:
             device=Devices[device_zone["unit"]]
             Domoticz.Debug("Mise à jour de " + str(device.Name) + " à la valeur " + str(device_zone["sValue"]))
             if device.sValue != str(device_zone["sValue"]):
-                device.Update(nValue=0, sValue=str(device_zone["sValue"]))
+                device.Update(nValue=device_zone["nValue"], sValue=str(device_zone["sValue"]))
 
     def updateDeviceFromFrisquetChaudiere(self):
+        ecs_out=str(self.incomingPayload["ecs"]["MODE_ECS"]["id"])
         devices_chaudiere = [
-            { "unit":1, "nValue":self.ecs_out_to_nValue.get(str(self.incomingPayload["ecs"]["MODE_ECS"]["id"])), "sValue":self.ecs_out_to_in.get(str(self.incomingPayload["ecs"]["MODE_ECS"]["id"])) }
+            { "unit":int(const.C_MODE_ECS), "nValue":self.ecs_out[ecs_out]["nValue"], "sValue":self.ecs_out[ecs_out]["ecs_in"] }
             ]
         for device_chaudiere in devices_chaudiere:
             device=Devices[device_chaudiere["unit"]]
@@ -257,7 +261,7 @@ class FrisquetConnectPlugin:
             device.Update(nValue=int(device_chaudiere["nValue"]), sValue=str(device_chaudiere["sValue"]))
 
     def createDeviceByZone(self, zone):
-#Zone 1 : 11 TAMB, 12 CONS_CONF, 13 CONS_RED, 14, CONS_HG
+#Zone 1 : 11 TAMB, 12 CONS_CONF, 13 CONS_RED, 14, CONS_HG, 15 MODE 
 #Zone 2:  21 TAMB, 22 CONS_CONF, etc.
 #          'MODE': 8,
 #          'SELECTEUR': 8,
@@ -267,28 +271,34 @@ class FrisquetConnectPlugin:
 #	       'ACTIVITE_BOOST': False
         num_zone = str(zone["numero"])
         nom_zone = zone["nom"]
+        Options_mode = {"LevelActions": "|| ||",
+                        "LevelNames": "Auto|Confort|Reduit|Hors-Gel",
+                        "LevelOffHidden": "false",
+                        "SelectorStyle": "1"}
         devices_zone = [
-            {"unit": int(num_zone + const.C_TAMB), "name": "Temperature " + nom_zone, "TypeName": "Temperature"},
-            {"unit": int(num_zone + const.C_CONS_RED), "name": "Consigne Reduit " + nom_zone, "TypeName": "Setpoint"},
-            {"unit": int(num_zone + const.C_CONS_CONF), "name": "Consigne Confort " + nom_zone, "TypeName": "Setpoint"},
-            {"unit": int(num_zone + const.C_CONS_HG), "name": "Consigne Hors-Gel " + nom_zone, "TypeName": "Setpoint"}
+            {"unit": int(num_zone + const.C_TAMB),                       "name": "Temperature " + nom_zone,       "TypeName": "Temperature",     "Options":None},
+            {"unit": int(num_zone + self.cons_nom["Reduit"]["unit"]),    "name": "Consigne Reduit " + nom_zone,   "TypeName": "Setpoint",        "Options":None},
+            {"unit": int(num_zone + self.cons_nom["Confort"]["unit"]),   "name": "Consigne Confort " + nom_zone,  "TypeName": "Setpoint",        "Options":None},
+            {"unit": int(num_zone + self.cons_nom["Hors-Gel"]["unit"]),  "name": "Consigne Hors-Gel " + nom_zone, "TypeName": "Setpoint",        "Options":None},
+            {"unit": int(num_zone + self.cons_nom["Selecteur"]["unit"]), "name": "Mode Permanent " + nom_zone,    "TypeName": "Selector Switch", "Options":Options_mode}
             ]
         for device_zone in devices_zone:
             if not Devices or device_zone["unit"] not in Devices:
                 Domoticz.Debug("Creation du device " + device_zone["name"])
-                Domoticz.Device(Name=device_zone["name"], \
-                                Unit=device_zone["unit"], \
-                                TypeName=device_zone["TypeName"] \
+                Domoticz.Device(Name     = device_zone["name"], \
+                                Unit     = device_zone["unit"], \
+                                TypeName = device_zone["TypeName"], \
+                                Options  = device_zone["Options"]
                                 ).Create()
 
     def createDeviceChaudiere(self):
 #1 ECS
         Options_ecs = {"LevelActions": "|| ||",
-                   "LevelNames": "Stop|Eco+ Timer|Eco+|Eco Timer|Eco|Max",
-                   "LevelOffHidden": "false",
-                   "SelectorStyle": "1"}
+                       "LevelNames": "Stop|Eco+ Timer|Eco+|Eco Timer|Eco|Max",
+                       "LevelOffHidden": "false",
+                       "SelectorStyle": "1"}
         devices_chaudiere = [
-            {"unit":1, "name": "Mode Eau Chaude Sanitaire", "TypeName": "Selector Switch", "Options": Options_ecs, "Image":11}
+            {"unit":int(const.C_MODE_ECS), "name": "Mode Eau Chaude Sanitaire", "TypeName": "Selector Switch", "Options": Options_ecs, "Image":11}
         ]
         for device_chaudiere in devices_chaudiere:
             if not Devices or device_chaudiere["unit"] not in Devices:
@@ -309,7 +319,7 @@ class FrisquetConnectPlugin:
                 case 242:
                     device.Update(nValue=0, sValue=str(Level))
                 case 244:
-                    device.Update(nValue=self.ecs_in_to_nValue.get(Level), sValue=str(Level))
+                    device.Update(nValue=self.ecs_in[Level]["nValue"], sValue=str(Level))
 
     def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
         Domoticz.Debug("Notification: " + Name + "," + Subject + "," + Text + "," + Status + "," + str(Priority) + "," + Sound + "," + ImageFile)
@@ -319,9 +329,10 @@ class FrisquetConnectPlugin:
 
     def onHeartbeat(self):
         Domoticz.Debug("onHeartbeat called")
-        self.ensure_token()
         if self.auth_token and self.num_chaudiere:
             self.getFrisquetData()
+        #on renouvelle le token à la fin du heartbeat pour éviter les problèmes entre la réponse du renouvellement et la nouvelle demande de données
+        self.ensure_token()
 
 
 global _plugin
