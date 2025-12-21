@@ -13,18 +13,10 @@
 #       alarmes
 #       Consommation
 """
-<plugin key="Frisquet-connect" name="Frisquet-Connect" author="Krakinou" version="0.1.0" wikilink="https://github.com/Krakinou/FrisquetConnectDomoticz">
+<plugin key="Frisquet-connect" name="Frisquet-Connect" author="Krakinou" version="0.2.0" wikilink="https://github.com/Krakinou/FrisquetConnectDomoticz">
     <description>
         <h2>Frisquet-connect pour Domoticz</h2><br/>
-        Version Beta d'un plugin frisquet-Connect pour Domoticz permettant de controler sa chaudiere si un Frisquet-Connect est connecte. Les dispositifs suivants sont crees automatiquement par le plugin :
-        <ul style="list-style-type:square">
-            <li>Capteur de Temperature de zone</li>
-            <li>Consigne Hors-Gel de zone</li>
-            <li>Consigne Reduit de zone</li>
-            <li>Consigne Confort de zone</li>
-            <li>Mode Permanent de zone</li>
-            <li>Réglage du mode ECS (Eau Chaude Sanitaire)</li>
-        </ul>
+        Connecteur Frisquet-Connect pour Domoticz permettant de controler sa chaudiere à distance. Un boitier Frisquet-Connect et un compte actif sont requis pour ce plugin.
     </description>
     <params>
         <param field="Username" label="Username" required="true"/>
@@ -137,8 +129,6 @@ class FrisquetConnectPlugin:
         Domoticz.Debug("Mode : " + str(mode) + ", nValue : " + str(value))
         return int(value)
 
-
-
     def pushUpdateToFrisquet(self, Unit, Level):
         Domoticz.Debug("Starting Push Data")
         device = Devices[Unit]
@@ -155,6 +145,7 @@ class FrisquetConnectPlugin:
             payloadValeur = self.getValueOut(device.Unit, Level)
         payload = [{"cle":cle,  "valeur": payloadValeur}]
         self.pendingPayload = json.dumps(payload)
+
         Domoticz.Debug("Payload to push : " + str(self.pendingPayload))
         self.httpConn = Domoticz.Connection(
             Name="pushUpdateToFrisquet",
@@ -165,6 +156,25 @@ class FrisquetConnectPlugin:
         )
         self.httpConn.Connect()
 
+    def updateModeDero(self, zone, value_out):
+        #La déro est à true ou false dans les zones, mais l'activation se fait sur la chaudiere générale. Il existe donc 2 devices (au moins) : celui de la zone
+        # en lecture seule et le général en modifiable
+        Domoticz.Debug("Mise à jour de la dérogation sur la chaudiere générale avec " + str(value_out))
+        device_dero=Devices[int(next((m["unit"] for m in const.C_CHAUDIERE if m["mode"] == "MODE_DERO"), None))]
+        Domoticz.Debug("et nValue : " + str(device_dero.nValue))
+        if not device_dero.Unit in Devices:
+            return
+        if value_out == False:
+            Domoticz.Debug("device dero nvalue : " + str(device_dero.nValue))
+            if device_dero.nValue > 0:
+                device.Update(nValue=0, sValue="0")
+            return
+        sValue_dero=str(next( (m["value_in"] for m in const.MODE_DERO if m["value_out"] == str(zone["carac_zone"]["MODE"])), None))
+        Domoticz.Debug("La valeur de selecteur est de " + str(zone["carac_zone"]["MODE"]) + ", la valeur à mettre à jour est donc " + sValue_dero)
+        if device_dero.sValue != sValue_dero:
+            device_dero.Update(nValue=1, sValue=sValue_dero)
+        return
+
     def updateDeviceFromFrisquetByZone(self, zone):
         num_zone = str(zone["numero"])
         for device_zone in const.C_ZONE:
@@ -172,19 +182,25 @@ class FrisquetConnectPlugin:
             value_out=zone["carac_zone"][device_zone["mode"]]
             Domoticz.Debug("Mise à jour de " + str(device.Name) + ", valeur recue :  " + str(value_out))
             if getattr(const, device_zone["mode"], None) == None:
-                sValue= value_out / 10.0
-                nValue= 0
+                if isinstance(value_out, bool):
+                    sValue=str(value_out)
+                else:
+                    sValue= value_out / 10.0
+                    nValue= 0
             else:
                 sValue= next( (m["value_in"] for m in getattr(const, device_zone["mode"], None) if m["value_out"] == str(value_out)), None)
                 nValue= next( (m["nValue"]   for m in getattr(const, device_zone["mode"], None) if m["value_out"] == str(value_out)), None)
+            if device_zone["mode"]=="DERO":
+                self.updateModeDero(zone, value_out)
             if str(device.sValue) != str(sValue) or self.deviceUpdatedMoreThan(device, 300):
-                    Domoticz.Debug("Mise à jour de " + str(device.Name) + " à la valeur " + str(sValue))
+                Domoticz.Debug("Mise à jour de " + str(device.Name) + " à la valeur " + str(sValue))
+                if device.Unit in Devices:
                     device.Update(nValue=int(nValue), sValue=str(sValue))
 
     def updateDeviceFromFrisquetChaudiere(self):
         for device_chaudiere in const.C_CHAUDIERE:
             device=Devices[int(device_chaudiere["unit"])]
-            if not getattr(const, device_chaudiere["mode"], None) == None:
+            if not getattr(const, device_chaudiere["mode"], None) == None: #pour l'instant seulement ECS, donc on garde en dur
                 ecs_out=str(self.incomingPayload["ecs"]["MODE_ECS"]["id"])
                 Domoticz.Debug("Mise à jour de " + str(device.Name) + ", valeur recue :  " + str(ecs_out))
                 ecs_in= next((m["value_in"] for m in getattr(const, device_chaudiere["mode"], None) if m["value_out"] == ecs_out), None)
@@ -192,9 +208,11 @@ class FrisquetConnectPlugin:
                 nValue= next((m["nValue"]   for m in getattr(const, device_chaudiere["mode"], None) if m["value_out"] == ecs_out), None)
                 if device.sValue != sValue or self.deviceUpdatedMoreThan(device, 300):
                     Domoticz.Debug("Mise à jour de " + str(device.Name) + " à la valeur " + sValue)
-                    device.Update(nValue=int(nValue), sValue=sValue)
+                    if device.Unit in Devices:
+                        device.Update(nValue=int(nValue), sValue=sValue)
 #            else:
 #               TO DO
+
     def createDeviceByZone(self, zone):
 #Zone 1 : 11 TAMB, 12 CONS_CONF, 13 CONS_RED, 14, CONS_HG, 15 MODE PERMANENT, 16 MODE ACTUEL
 #Zone 2:  21 TAMB, 22 CONS_CONF, etc.
@@ -221,14 +239,12 @@ class FrisquetConnectPlugin:
                                 Image=device_chaudiere["Image"]
                                 ).Create()
 
-
     def onStart(self):
         Domoticz.Status("Starting Frisquet-connect")
         if Parameters["Mode6"] != "0":
             Domoticz.Debugging(int(Parameters["Mode6"]))
             DumpConfigToLog()
         self.connectToFrisquet()
-        Domoticz.Debug("Fin du onstart")
 
     def onStop(self):
         Domoticz.Debug("onStop called")
@@ -318,7 +334,6 @@ class FrisquetConnectPlugin:
             case _:
                 Domoticz.Error("Connection inconnue")
         self.httpConn.Disconnect()
-
 
     def onCommand(self, Unit, Command, Level, Hue):
         Domoticz.Debug("onCommand called for Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level))
