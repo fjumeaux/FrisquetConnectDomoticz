@@ -25,7 +25,7 @@ Domoticz Plugin For Frisquet Connect Boiler control
 - Holidays
 - Program
 - Alarms
-- Update for new version warning
+- Plugin update message
 - translation
 
 # Installation
@@ -51,10 +51,12 @@ Following devices are created, Zone dependent devices are created multiple times
 Device Name | Type | Zone Dependent | Fonction |
 |------------|------|----|---------------------------------------|
 |Temperature Zone X |Temperature| Yes | Temperature sensor from the Frisquet Visio Module for Zone X. If mutiple zones are available mutiple devices will be created |
+|Consigne actuelle Zone X | Temperature | Yes | Actual setpoint used by the boiler. Please note that it may take until 15 minutes to update after a setpoint or mode change|
 |Consigne Hors-Gel Zone X | Setpoint |Yes | Frost Protection Thermostat setpoint for Zone X |
 |Consigne Reduit Zone X | Setpoint | Yes |Reduce Thermostat setpoint Zone X |
 |Consigne Confort Zone X | Setpoint | Yes |Confort Thermostat setpoint Zone X |
 |Mode Permanent Zone X | Selector Switch| Yes | Force the zone to a given mode |
+|Mode Dérogation | Selector Switch | No | Will force Confort or Reduce mode until the next cycle |
 |Mode Actuel Zone X | Text | Yes | Indicate the current heating mode |
 |Mode Eau Chaude Sanitaire | Selector Switch | No | Hot Water control |  
 
