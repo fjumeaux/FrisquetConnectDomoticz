@@ -56,7 +56,7 @@ Device Name | Type | Zone Dependent | Fonction |
 |Consigne Reduit Zone X | Setpoint | Yes |Reduce Thermostat setpoint Zone X |
 |Consigne Confort Zone X | Setpoint | Yes |Confort Thermostat setpoint Zone X |
 |Mode Permanent Zone X | Selector Switch| Yes | Force the zone to a given mode |
-|Mode Dérogation | Selector Switch | No | Will force Confort or Reduce mode until the next cycle |
+|Mode Dérogation | Selector Switch | No | Will force Confort or Reduce mode for all zone until the next cycle |
 |Mode Actuel Zone X | Text | Yes | Indicate the current heating mode |
 |Mode Eau Chaude Sanitaire | Selector Switch | No | Hot Water control |  
 
