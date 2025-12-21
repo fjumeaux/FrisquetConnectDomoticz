@@ -1,9 +1,7 @@
 # Frisquet connect api plugin pour Domoticz
 # Author: Krakinou
 #
-#TODO : Derogation
-#       Numéro chaudiere optionnelle
-#       BOOST
+#TODO : BOOST
 #       Chaudière en veille
 #       Auto/manu
 #       Temperature Exterieure
@@ -11,8 +9,9 @@
 #       programmation / jour
 #       alarmes
 #       Consommation
+
 """
-<plugin key="Frisquet-connect" name="Frisquet-Connect" author="Krakinou" version="0.2.0" wikilink="https://github.com/Krakinou/FrisquetConnectDomoticz">
+<plugin key="Frisquet-connect" name="Frisquet-Connect" author="Krakinou" version="0.2.1" wikilink="https://github.com/Krakinou/FrisquetConnectDomoticz">
     <description>
         <h2>Frisquet-connect pour Domoticz</h2><br/>
         Connecteur Frisquet-Connect pour Domoticz permettant de controler sa chaudiere à distance. Un boitier Frisquet-Connect et un compte actif sont requis pour ce plugin.
@@ -20,6 +19,11 @@
     <params>
         <param field="Username" label="Username" required="true"/>
 	<param field="Password" label="Password" password="true" required="true"/>
+        <param field="Mode1" label="Numéro de chaudière">
+            <description>
+               <br/>Ne remplissez ce champs que si votre site possede plusieurs chaudiere. Dans ce cas vous devrez créer plusieurs instances du plugin, une par chaudiere. Si vous n'avez qu'une seule chaudiere, laisser ce champs vide.
+            </description>
+        </param>
 	<param field="Mode6" label="Debug" width="150px">
             <options>
                 <option label="None" value="0"  default="true" />
@@ -47,6 +51,7 @@ import const
 class FrisquetConnectPlugin:
     enabled = False
     def __init__(self):
+        self.active = True
         self.httpConn = None
         self.incomingPayload = None
         self.pendingPayload = None
@@ -64,6 +69,9 @@ class FrisquetConnectPlugin:
             Domoticz.Debug("Token invalide ou expire, recuperation d'un nouveau token")
             self.connectToFrisquet()
 
+    def formatChaudiere(self, s: str) -> bool:
+        return isinstance(s, str) and len(s) == 14 and s.isdigit()
+
     def genererAppidRandom(self, longueur=22):
         caracteres = string.ascii_letters + string.digits
         return ''.join(random.choice(caracteres) for _ in range(longueur))
@@ -73,6 +81,8 @@ class FrisquetConnectPlugin:
         return (datetime.now() - last).total_seconds() > seconds
 
     def connectToFrisquet(self):
+        if not self.active:
+            return
         Domoticz.Debug("Starting Connect To Frisquet")
         payload = {
              "locale": "fr",
@@ -243,6 +253,11 @@ class FrisquetConnectPlugin:
         if Parameters["Mode6"] != "0":
             Domoticz.Debugging(int(Parameters["Mode6"]))
             DumpConfigToLog()
+        if Parameters["Mode1"] and not self.formatChaudiere(Parameters["Mode1"]):
+            Domoticz.Error("Le numero de chaudiere " + str(Parameters["Mode1"]) + " n\'est pas valide : verifiez votre entrée")
+            self.active = False
+        if Parameters["Mode1"]:
+            self.num_chaudiere = Parameters["Mode1"]
         self.connectToFrisquet()
 
     def onStop(self):
@@ -252,7 +267,7 @@ class FrisquetConnectPlugin:
         Domoticz.Debug("onConnect started for  : " + str(Connection.Name))
 
         if (Status != 0):
-            Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Mode1"]+" with error: "+Description)
+            Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+" with error: "+Description)
             return
 
         match Connection.Name:
@@ -320,7 +335,8 @@ class FrisquetConnectPlugin:
                 self.auth_token = self.incomingPayload["token"]
                 Domoticz.Debug("token received : " + self.auth_token)
                 self.token_expiry = time.time() + 86400
-                self.num_chaudiere = self.incomingPayload["utilisateur"]["sites"][0]["identifiant_chaudiere"]
+                if not self.num_chaudiere:
+                    self.num_chaudiere = self.incomingPayload["utilisateur"]["sites"][0]["identifiant_chaudiere"]
                 Domoticz.Debug("numero chaudiere : " + self.num_chaudiere)
             case "getFrisquetData":
                 self.createDeviceChaudiere()
@@ -355,6 +371,8 @@ class FrisquetConnectPlugin:
 
     def onHeartbeat(self):
         Domoticz.Debug("onHeartbeat called")
+        if not self.active:
+            return
         self.beatCounter += 1
         if self.beatCounter % 3 != 1:
             Domoticz.Debug('Heartbeat non pris en compte')
