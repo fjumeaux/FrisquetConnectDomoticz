@@ -164,7 +164,7 @@ class FrisquetConnectPlugin:
             Address= const.HOST,
             Port="443"
         )
-#        self.httpConn.Connect()
+        self.httpConn.Connect()
 
     def updateDeviceFromFrisquetByZone(self, zone):
         num_zone = str(zone["numero"])
