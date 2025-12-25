@@ -68,3 +68,9 @@ Daily energy consumption is calculated by the plugin by substracting the total c
 
 # Contribute
 Submit your PR on the dev branch.
+
+#Version history
+0.1.0 Initial version
+0.2.0 Adding Permanent mode and current heating status. Code refactoring
+0.2.1 Adding Derogation mode
+0.3.0 Adding en/fr translation and energy consumption
