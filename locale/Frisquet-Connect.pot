@@ -1,0 +1,203 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-25 15:38+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../plugin.py:75
+msgid "Invalid or expired token, new token retrieval"
+msgstr ""
+
+#: ../plugin.py:95
+msgid "Starting Connect To Frisquet"
+msgstr ""
+
+#: ../plugin.py:103 ../plugin.py:170
+msgid "Payload to push : "
+msgstr ""
+
+#: ../plugin.py:105
+msgid "Starting Connection to "
+msgstr ""
+
+#: ../plugin.py:116
+msgid "Starting data retrieval"
+msgstr ""
+
+#: ../plugin.py:132
+msgid "Starting energy consumption retrieval"
+msgstr ""
+
+#: ../plugin.py:154
+msgid "Starting Push Data"
+msgstr ""
+
+#: ../plugin.py:188
+#, python-format
+msgid "Updating %s with value 0"
+msgstr ""
+
+#: ../plugin.py:192
+#, python-format
+msgid "Switch Selector value is %s, value to update is %d"
+msgstr ""
+
+#: ../plugin.py:225
+#, python-format
+msgid "Updating current energy consumption : %s"
+msgstr ""
+
+#: ../plugin.py:229
+#, python-format
+msgid "Updating total energy consumption : %s"
+msgstr ""
+
+#: ../plugin.py:242
+msgid "Energy consumption storage : "
+msgstr ""
+
+#: ../plugin.py:280
+msgid "Value to return : "
+msgstr ""
+
+#: ../plugin.py:285
+msgid "Initializing historical data for "
+msgstr ""
+
+#: ../plugin.py:297
+#, python-format
+msgid "for %(name)s , total energy consumption is %(te)d KWh at %(date)s"
+msgstr ""
+
+#: ../plugin.py:304
+#, python-format
+msgid ""
+"For %(name)s , total energy consumption of %(te)d KWh was stored, difference "
+"of %(diff)d KWh"
+msgstr ""
+
+#: ../plugin.py:314
+#, python-format
+msgid "Initializing energy data for %(name)s between %(d1)s and %(d2)s"
+msgstr ""
+
+#: ../plugin.py:317
+msgid "Processing "
+msgstr ""
+
+#: ../plugin.py:321
+#, python-format
+msgid "For %(name)s , total energy consumption is %(te)d KWh at %(date)s"
+msgstr ""
+
+#: ../plugin.py:324
+#, python-format
+msgid "Nothing to update for %(name)s at %(date)s"
+msgstr ""
+
+#: ../plugin.py:333 ../plugin.py:355 ../plugin.py:360
+#, python-format
+msgid "Updating %(name)s , incoming value : %(value)s"
+msgstr ""
+
+#: ../plugin.py:346
+#, python-format
+msgid "Updating %(name)s to value %(value)s"
+msgstr ""
+
+#: ../plugin.py:374 ../plugin.py:385
+#, python-format
+msgid "Creating device %(name)s with unit %(unit)s and TypeName %(typename)s"
+msgstr ""
+
+#: ../plugin.py:393
+#, python-format
+msgid ""
+"Creating device %(name)s with unit %(unit)s, Type %(type)s and Subtype "
+"%(subtype)s"
+msgstr ""
+
+#: ../plugin.py:413
+msgid "Starting Frisquet-connect"
+msgstr ""
+
+#: ../plugin.py:419
+#, python-format
+msgid "Boiler ID %s is not valid. Check your entry"
+msgstr ""
+
+#: ../plugin.py:426
+msgid "onStop called"
+msgstr ""
+
+#: ../plugin.py:429
+msgid "onConnect started for  : "
+msgstr ""
+
+#: ../plugin.py:432
+#, python-format
+msgid "Failed to connect (%(status)s) to %(address)s with error %(error)s"
+msgstr ""
+
+#: ../plugin.py:475 ../plugin.py:528
+msgid "Unknown connection"
+msgstr ""
+
+#: ../plugin.py:477
+#, python-format
+msgid "Method : %(method)s , URL : %(url)s"
+msgstr ""
+
+#: ../plugin.py:481
+msgid "onMessage called for "
+msgstr ""
+
+#: ../plugin.py:493
+msgid "Login Error : Username or password incorrect?"
+msgstr ""
+
+#: ../plugin.py:500
+#, python-format
+msgid "Server send an error %(status)d - %(message)s for %(name)s"
+msgstr ""
+
+#: ../plugin.py:502
+#, python-format
+msgid "Server send an error %d for %s"
+msgstr ""
+
+#: ../plugin.py:507
+msgid "token received : "
+msgstr ""
+
+#: ../plugin.py:511
+msgid "Boiler ID : "
+msgstr ""
+
+#: ../plugin.py:525
+msgid "Data has been sent and received"
+msgstr ""
+
+#: ../plugin.py:531
+#, python-format
+msgid ""
+"onCommand called for Unit %(unit)d : Parameter '%(param)s', Level:  %(level)d"
+msgstr ""
+
+#: ../plugin.py:540
+#, python-format
+msgid "Updating %(name)s with nValue %(nvalue)d and sValue %(svalue)s"
+msgstr ""

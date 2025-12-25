@@ -1,0 +1,205 @@
+# French translations for PACKAGE package
+# Traductions françaises du paquet PACKAGE.
+# Copyright (C) 2025 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# root <root@yunohost-dev.local>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-25 15:38+0100\n"
+"PO-Revision-Date: 2025-12-25 12:21+0100\n"
+"Last-Translator: root <root@yunohost-dev.local>\n"
+"Language-Team: French <traduc@traduc.org>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ../plugin.py:75
+msgid "Invalid or expired token, new token retrieval"
+msgstr "Token invalide ou expiré, récupération d'un nouveau token"
+
+#: ../plugin.py:95
+msgid "Starting Connect To Frisquet"
+msgstr "Démarrage de la connexion à Frisquet"
+
+#: ../plugin.py:103 ../plugin.py:170
+msgid "Payload to push : "
+msgstr "Payload à envoyer "
+
+#: ../plugin.py:105
+msgid "Starting Connection to "
+msgstr "Démarrage de la connexion à "
+
+#: ../plugin.py:116
+msgid "Starting data retrieval"
+msgstr "Démarrage de la récupération des données"
+
+#: ../plugin.py:132
+msgid "Starting energy consumption retrieval"
+msgstr "Démarrage de la récupération de consommation d'énergie"
+
+#: ../plugin.py:154
+msgid "Starting Push Data"
+msgstr "Démarrage de l'envoi des données"
+
+#: ../plugin.py:188
+#, python-format
+msgid "Updating %s with value 0"
+msgstr "Mise à jour de %s avec la valeur 0"
+
+#: ../plugin.py:192
+#, python-format
+msgid "Switch Selector value is %s, value to update is %d"
+msgstr "Interrupteur à la valeur %s, valeur à mettre à jour est %d"
+
+#: ../plugin.py:225
+#, python-format
+msgid "Updating current energy consumption : %s"
+msgstr "Mise à jour de la consommation actuelle d'énergie : %s"
+
+#: ../plugin.py:229
+#, python-format
+msgid "Updating total energy consumption : %s"
+msgstr "Mise à jour de la consommation totale d'énergie : %s"
+
+#: ../plugin.py:242
+msgid "Energy consumption storage : "
+msgstr "Stockage de la consommation d'énergie : "
+
+#: ../plugin.py:280
+msgid "Value to return : "
+msgstr "Valeur à retourner : "
+
+#: ../plugin.py:285
+msgid "Initializing historical data for "
+msgstr "Initialisation des valeur d'historique pour "
+
+#: ../plugin.py:297
+#, python-format
+msgid "for %(name)s , total energy consumption is %(te)d KWh at %(date)s"
+msgstr "Pour %(name)s, la consommation totale d'énergie est de %(te)d KWh à la date du %(date)s"
+
+#: ../plugin.py:304
+#, python-format
+msgid "For %(name)s , total energy consumption of %(te)d KWh was stored, difference "
+"of %(diff)d KWh"
+msgstr "Pour %(name)s, la consommation totale d'énergie est de %(te)d à la date du %(diff)s"
+
+#: ../plugin.py:314
+#, python-format
+msgid "Initializing energy data for %(name)s between %(d1)s and %(d2)s"
+msgstr "Initialisation des données d'énergie pour %(name)s entre le %(d1)s et le %(d2)s"
+
+#: ../plugin.py:317
+msgid "Processing "
+msgstr "Traitement de "
+
+#: ../plugin.py:321
+#, python-format
+msgid "For %(name)s , total energy consumption is %(te)d KWh at %(date)s"
+msgstr "Pour %(name)s, la consommation totale d'énergie est de %(te)d à la date du %(date)s"
+
+#: ../plugin.py:324
+#, python-format
+msgid "Nothing to update for %(name)s at %(date)s"
+msgstr "Rien n'à mettre à jour pour %(name)s au %(date)s"
+
+#: ../plugin.py:333 ../plugin.py:355 ../plugin.py:360
+#, python-format
+msgid "Updating %(name)s , incoming value : %(value)s"
+msgstr "Mise à jour de %(name)s, valeur reçue : %(value)s"
+
+#: ../plugin.py:346
+#, python-format
+msgid "Updating %(name)s to value %(value)s"
+msgstr "Mise à jour de %(name)s à la valeur %(value)s"
+
+#: ../plugin.py:374 ../plugin.py:385
+#, python-format
+msgid "Creating device %(name)s with unit %(unit)s and TypeName %(typename)s"
+msgstr "Création du dispositif %(name)s avec numéro d'unit %(unit)s et TypeName %(typename)s"
+
+#: ../plugin.py:393
+#, python-format
+msgid ""
+"Creating device %(name)s with unit %(unit)s, Type %(type)s and Subtype "
+"%(subtype)s"
+msgstr ""
+"Création du dispositif %(name)s avec numéro d'unit %(unit)s, Type %(type)s et SubType "
+"%(subtype)s"
+
+#: ../plugin.py:413
+msgid "Starting Frisquet-connect"
+msgstr "Démarrage de Frisquet-Connect"
+
+#: ../plugin.py:419
+#, python-format
+msgid "Boiler ID %s is not valid. Check your entry"
+msgstr "Numéro de chaudière %s non valide. Vérifiez votre saisie"
+
+#: ../plugin.py:426
+msgid "onStop called"
+msgstr "onStop appelé"
+
+#: ../plugin.py:429
+msgid "onConnect started for  : "
+msgstr "onConnect démarré pour : "
+
+#: ../plugin.py:432
+#, python-format
+msgid "Failed to connect (%(status)s) to %(address)s with error %(error)s"
+msgstr "Impossible de se connecter à %(address)s, erreur (%(statut)s) %(error)s"
+
+#: ../plugin.py:475 ../plugin.py:528
+msgid "Unknown connection"
+msgstr "Connection inconnue"
+
+#: ../plugin.py:477
+#, python-format
+msgid "Method : %(method)s , URL : %(url)s"
+msgstr "Méthode : %(method)s, URL : %(url)s"
+
+#: ../plugin.py:481
+msgid "onMessage called for "
+msgstr "onMessage appelée pour "
+
+#: ../plugin.py:493
+msgid "Login Error : Username or password incorrect?"
+msgstr "Erreur de connexion : Utilisateur et mot de passe incorrect?"
+
+#: ../plugin.py:500
+#, python-format
+msgid "Server send an error %(status)d - %(message)s for %(name)s"
+msgstr "Le serveur a retourné une erreur %(status)d - %(message)s pour %(name)s"
+
+#: ../plugin.py:502
+#, python-format
+msgid "Server send an error %d for %s"
+msgstr "Le serveur a retourner une erreur %d pour %s"
+
+#: ../plugin.py:507
+msgid "token received : "
+msgstr "Token reçu : "
+
+#: ../plugin.py:511
+msgid "Boiler ID : "
+msgstr "Numéro de chaudière : "
+
+#: ../plugin.py:525
+msgid "Data has been sent and received"
+msgstr "Données correctement reçues et envoyées"
+
+#: ../plugin.py:531
+#, fuzzy, python-format
+msgid ""
+"onCommand called for Unit %(unit)d : Parameter '%(param)s', Level:  %(level)d"
+msgstr "onCommand appelé pour Unit %(unit)d : Paramètre '%(param)s', Level %(level)d"
+
+#: ../plugin.py:540
+#, fuzzy, python-format
+msgid "Updating %(name)s with nValue %(nvalue)d and sValue %(svalue)s"
+msgstr "Mise à jour de %(name)s avec nValue %(nvalue)d et sValue %(svalue)s"

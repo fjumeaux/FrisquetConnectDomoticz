@@ -1,0 +1,205 @@
+# English translations for PACKAGE package.
+# Copyright (C) 2025 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# root <root@yunohost-dev.local>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-25 15:38+0100\n"
+"PO-Revision-Date: 2025-12-25 12:22+0100\n"
+"Last-Translator: root <root@yunohost-dev.local>\n"
+"Language-Team: English\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ASCII\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../plugin.py:75
+msgid "Invalid or expired token, new token retrieval"
+msgstr "Invalid or expired token, new token retrieval"
+
+#: ../plugin.py:95
+msgid "Starting Connect To Frisquet"
+msgstr "Starting Connect To Frisquet"
+
+#: ../plugin.py:103 ../plugin.py:170
+msgid "Payload to push : "
+msgstr "Payload to push : "
+
+#: ../plugin.py:105
+msgid "Starting Connection to "
+msgstr "Starting Connection to "
+
+#: ../plugin.py:116
+msgid "Starting data retrieval"
+msgstr "Starting data retrieval"
+
+#: ../plugin.py:132
+msgid "Starting energy consumption retrieval"
+msgstr "Starting energy consumption retrieval"
+
+#: ../plugin.py:154
+msgid "Starting Push Data"
+msgstr "Starting Push Data"
+
+#: ../plugin.py:188
+#, python-format
+msgid "Updating %s with value 0"
+msgstr "Updating %s with value 0"
+
+#: ../plugin.py:192
+#, python-format
+msgid "Switch Selector value is %s, value to update is %d"
+msgstr "Switch Selector value is %s, value to update is %d"
+
+#: ../plugin.py:225
+#, python-format
+msgid "Updating current energy consumption : %s"
+msgstr "Updating current energy consumption : %s"
+
+#: ../plugin.py:229
+#, python-format
+msgid "Updating total energy consumption : %s"
+msgstr "Updating total energy consumption : %s"
+
+#: ../plugin.py:242
+msgid "Energy consumption storage : "
+msgstr "Energy consumption storage : "
+
+#: ../plugin.py:280
+msgid "Value to return : "
+msgstr "Value to return : "
+
+#: ../plugin.py:285
+msgid "Initializing historical data for "
+msgstr "Initializing historical data for "
+
+#: ../plugin.py:297
+#, fuzzy, python-format
+msgid "for %(name)s , total energy consumption is %(te)d KWh at %(date)s"
+msgstr "for %1$s, total energy consumption is %d KWh at %2$s"
+
+#: ../plugin.py:304
+#, fuzzy, python-format
+msgid ""
+"For %(name)s , total energy consumption of %(te)d KWh was stored, difference "
+"of %(diff)d KWh"
+msgstr ""
+"For %1$s, total energy consumption of %1$d KWh was stored, difference of "
+"%2$d KWh"
+
+#: ../plugin.py:314
+#, fuzzy, python-format
+msgid "Initializing energy data for %(name)s between %(d1)s and %(d2)s"
+msgstr "Initializing energy data for %1$s between %2$s and %3$s"
+
+#: ../plugin.py:317
+msgid "Processing "
+msgstr "Processing "
+
+#: ../plugin.py:321
+#, fuzzy, python-format
+msgid "For %(name)s , total energy consumption is %(te)d KWh at %(date)s"
+msgstr "For %1$s, total energy consumption is %d KWh at %2$s"
+
+#: ../plugin.py:324
+#, fuzzy, python-format
+msgid "Nothing to update for %(name)s at %(date)s"
+msgstr "Nothing to update for %1$s at %2$s"
+
+#: ../plugin.py:333 ../plugin.py:355 ../plugin.py:360
+#, fuzzy, python-format
+msgid "Updating %(name)s , incoming value : %(value)s"
+msgstr "Updating %1$s, incoming value : %2$s"
+
+#: ../plugin.py:346
+#, fuzzy, python-format
+msgid "Updating %(name)s to value %(value)s"
+msgstr "Updating %1$s to value %2$s"
+
+#: ../plugin.py:374 ../plugin.py:385
+#, fuzzy, python-format
+msgid "Creating device %(name)s with unit %(unit)s and TypeName %(typename)s"
+msgstr "Creating device %1$s with unit %2$s and TypeName %3$s"
+
+#: ../plugin.py:393
+#, fuzzy, python-format
+msgid ""
+"Creating device %(name)s with unit %(unit)s, Type %(type)s and Subtype "
+"%(subtype)s"
+msgstr "Creating device %1$s with unit %2$s, Type %3$s and Subtype %4$s"
+
+#: ../plugin.py:413
+msgid "Starting Frisquet-connect"
+msgstr "Starting Frisquet-connect"
+
+#: ../plugin.py:419
+#, python-format
+msgid "Boiler ID %s is not valid. Check your entry"
+msgstr "Boiler ID %s is not valid. Check your entry"
+
+#: ../plugin.py:426
+msgid "onStop called"
+msgstr "onStop called"
+
+#: ../plugin.py:429
+msgid "onConnect started for  : "
+msgstr "onConnect started for  : "
+
+#: ../plugin.py:432
+#, fuzzy, python-format
+msgid "Failed to connect (%(status)s) to %(address)s with error %(error)s"
+msgstr "Failed to connect (%1$s) to %2$s with error %3$s"
+
+#: ../plugin.py:475 ../plugin.py:528
+msgid "Unknown connection"
+msgstr "Unknown connection"
+
+#: ../plugin.py:477
+#, fuzzy, python-format
+msgid "Method : %(method)s , URL : %(url)s"
+msgstr "Method : %1$s, URL : %2$s"
+
+#: ../plugin.py:481
+msgid "onMessage called for "
+msgstr "onMessage called for "
+
+#: ../plugin.py:493
+msgid "Login Error : Username or password incorrect?"
+msgstr "Login Error : Username or password incorrect?"
+
+#: ../plugin.py:500
+#, fuzzy, python-format
+msgid "Server send an error %(status)d - %(message)s for %(name)s"
+msgstr "Server send an error %d - %1$s for %2$s"
+
+#: ../plugin.py:502
+#, fuzzy, python-format
+msgid "Server send an error %d for %s"
+msgstr "Server send an error %d - for %2$s"
+
+#: ../plugin.py:507
+msgid "token received : "
+msgstr "token received : "
+
+#: ../plugin.py:511
+msgid "Boiler ID : "
+msgstr "Boiler ID : "
+
+#: ../plugin.py:525
+msgid "Data has been sent and received"
+msgstr "Data has been sent and received"
+
+#: ../plugin.py:531
+#, fuzzy, python-format
+msgid ""
+"onCommand called for Unit %(unit)d : Parameter '%(param)s', Level:  %(level)d"
+msgstr "onCommand called for Unit %1$d : Parameter '%s', Level:  %2$d"
+
+#: ../plugin.py:540
+#, fuzzy, python-format
+msgid "Updating %(name)s with nValue %(nvalue)d and sValue %(svalue)s"
+msgstr "Updating %1$s with nValue %d and sValue %2$s"
