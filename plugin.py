@@ -303,7 +303,7 @@ class FrisquetConnectPlugin:
             except Exception:
                 pass
             energy_yesterday = energy_total - energy_total_pre
-            Domoticz.Debug(_("For %(name)s , total energy consumption of %(te)d KWh was stored, difference of %(diff)d KWh") % { "name":str(device.Name), "te":energy_yesterday, "diff":energy_yesterday})
+            Domoticz.Debug(_("For %(name)s , total energy consumption of %(te)d KWh was stored, difference of %(diff)d KWh") % { "name":str(device.Name), "te":energy_total, "diff":energy_yesterday})
             self.writeEnergy(type_energy, str(date_yesterday),energy_yesterday, energy_total)
             device.Update(nValue=0, sValue="-1;" + str(energy_yesterday) + ";" + str(date_yesterday))
 
