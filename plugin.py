@@ -270,7 +270,8 @@ class FrisquetConnectPlugin:
             if entry["boiler_id"] == boiler_id and entry["type"] == type_energy
         ]
 
-    def getLastEnergyOfMonth(self, boiler_id, type_energy, month, year):
+    def getLastEnergyOfMonth(self, boiler_id, type_energy, day, month, year):
+        #which is not yesterday
         data = self.getEnergyFiltered(boiler_id, type_energy)
         filtered = []
         for entry in data:
@@ -278,7 +279,7 @@ class FrisquetConnectPlugin:
                 entry_date = datetime.strptime(entry.get("date"), "%Y-%m-%d")
             except 	(ValueError, TypeError):
                 continue
-            if entry_date.year == year and entry_date.month == month:
+            if entry_date.year == year and entry_date.month == month and entry_date.day != day:
                 filtered.append((entry_date, entry))
         if not filtered: return None
 
@@ -303,7 +304,7 @@ class FrisquetConnectPlugin:
             Domoticz.Debug(_("for %(name)s , total energy consumption is %(te)d KWh at %(date)s") % { "name":str(device.Name), "te":energy_total, "date":str(date_yesterday.strftime("%Y-%m-%d"))})
             energy_total_pre=0
             try:
-                energy_total_pre=self.getLastEnergyOfMonth(self.boilerID, type_energy, date_yesterday.month, date_yesterday.year).get("monthly_energy_to_date", 0)
+                energy_total_pre=self.getLastEnergyOfMonth(self.boilerID, type_energy, date_yesterday.day, date_yesterday.month, date_yesterday.year).get("monthly_energy_to_date", 0)
             except Exception:
                 pass
             energy_yesterday = energy_total - energy_total_pre
