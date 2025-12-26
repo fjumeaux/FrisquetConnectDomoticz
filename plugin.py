@@ -127,9 +127,13 @@ class FrisquetConnectPlugin:
         self.httpConnData.Connect()
 
     def getFrisquetEnergy(self):
-        if self.onceADay == date.today():
+        now = datetime.now()
+        #We update energy only once a day and not between midnight and 1AM as the boiler may have not updated it yet
+        if self.onceADay != None and ( ( now - self.onceADay < timedelta(hours=24) or now.hour == 0 ) ):
             return
-        self.onceADay = date.today()
+        if self.onceADay == None: #We intialize it at 1AM so that the cycle starts in the night
+            self.onceAday = now.replace(hour=1, minute=0, second=0)
+        self.onceADay = datetime.now()
 
         Domoticz.Debug(_("Starting energy consumption retrieval"))
 
