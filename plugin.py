@@ -51,8 +51,18 @@ import random
 import string
 import const
 import gettext
+import builtins
 
-_ = gettext.gettext
+
+def setup_i18n():
+    lang = str(Settings["Language"])
+    translation = gettext.translation(
+        domain="Frisquet-Connect",
+        localedir=os.path.join(os.path.dirname(__file__), "locale"),
+        languages=[lang],
+    )
+    builtins._ = translation.gettext
+
 
 class FrisquetConnectPlugin:
     enabled = False
@@ -86,6 +96,7 @@ class FrisquetConnectPlugin:
 
     def deviceUpdatedMoreThan(self, device, seconds):
         if device and device.Unit in Devices:
+            Domoticz.Debug(_("Device %(name)s was last updated at %(date)s") % {"name": device.Name, "date": str(device.LastUpdate)})
             last = datetime.strptime(device.LastUpdate, "%Y-%m-%d %H:%M:%S")
             return (datetime.now() - last).total_seconds() > seconds
         return 0
@@ -408,14 +419,7 @@ class FrisquetConnectPlugin:
                 self.initializeEnergy.append((device_boiler["unit"], device_boiler["mode"]))
 
     def onStart(self):
-        lang = str(Settings["Language"])
-        translation = gettext.translation(
-            domain="Frisquet-Connect",
-            localedir=os.path.join(os.path.dirname(__file__), "locale"),
-            languages=[lang],
-        )
-        translation.install()
-        _ = translation.gettext
+        setup_i18n()
 
         Domoticz.Status(_("Starting Frisquet-connect"))
 
