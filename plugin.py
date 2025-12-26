@@ -357,14 +357,14 @@ class FrisquetConnectPlugin:
     def updateDeviceFromFrisquetboiler(self):
         for device_boiler in const.C_BOILER:
             device=Devices[int(device_boiler["unit"])]
-            if device_boiler["mode"] and getattr(const, device_boiler["mode"], None) == "MODE_ECS": #pour l'instant seulement ECS, donc on garde en dur
+            if device_boiler["mode"] and device_boiler["mode"] == "MODE_ECS": #pour l'instant seulement ECS, donc on garde en dur
                 ecs_out=str(self.incomingPayload["ecs"]["MODE_ECS"]["id"])
                 Domoticz.Debug(_("Updating %(name)s , incoming value : %(value)s") % { "name":str(device.Name), "value":str(ecs_out)})
                 ecs_in= next((m["value_in"] for m in getattr(const, device_boiler["mode"], None) if m["value_out"] == ecs_out), None)
                 sValue=str(ecs_in)
                 nValue= next((m["nValue"]   for m in getattr(const, device_boiler["mode"], None) if m["value_out"] == ecs_out), None)
                 if device.sValue != sValue or self.deviceUpdatedMoreThan(device, 300):
-                    Domoticz.Debug(_("Updating %(name)s , incoming value : %(value)s") % { "name":str(device.Name), "value":sValue})
+                    Domoticz.Debug(_("Updating %(name)s to value %(value)s") % { "name":str(device.Name), "value":sValue})
                     if device.Unit in Devices:
                         device.Update(nValue=int(nValue), sValue=sValue)
 #            else:
