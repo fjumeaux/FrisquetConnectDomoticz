@@ -96,7 +96,7 @@ msgid ""
 "For %(name)s , total energy consumption of %(te)d KWh was stored, difference "
 "of %(diff)d KWh"
 msgstr ""
-"Pour %(name)s, la consommation totale d'énergie est de %(te)d à la date du "
+"Pour %(name)s, une consommation totale d'énergie %(te)d KWh a été stocké, différence de "
 "%(diff)s"
 
 #: ../plugin.py:332
