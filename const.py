@@ -5,6 +5,8 @@ AUTH_API="/api/v1/authentifications"
 SITE_API="/api/v1/sites"
 ORDRES_API="/api/v1/ordres"
 
+CONSOMMATION="consommation.json"
+
 #General Chaudiere
 MODE_ECS = [
     { "nom":"Stop",       "value_out":"5", "value_in":0,  "nValue":0},
@@ -32,9 +34,11 @@ OPTIONS_DERO = {"LevelActions": "|| ||",
                "SelectorStyle": "1"}
 
 
-C_CHAUDIERE = [
-    { "nom":"Mode Eau Chaude Sanitaire", "unit":"1", "mode":"MODE_ECS",  "TypeName":"Selector Switch", "Image":11,   "Options":OPTIONS_ECS},
-    { "nom":"Mode Dérogation",           "unit":"2", "mode":"MODE_DERO", "TypeName":"Selector Switch", "Image":0, "Options":OPTIONS_DERO}
+C_BOILER = [
+    { "nom":"Mode Eau Chaude Sanitaire", "unit":"1", "mode":"MODE_ECS",  "TypeName":"Selector Switch", "Image":11, "Options":OPTIONS_ECS},
+    { "nom":"Mode Dérogation",           "unit":"2", "mode":"MODE_DERO", "TypeName":"Selector Switch", "Image":0,  "Options":OPTIONS_DERO},
+    { "nom":"Consommation Chauffage",    "unit":"3", "mode":"CHF",       "TypeName":None, "Type":243, "Subtype":33, "Image":0,  "Options":None},
+    { "nom":"Consommation ECS",          "unit":"4", "mode":"SAN",       "TypeName":None, "Type":243, "Subtype":33, "Image":0,  "Options":None}
 ]
 
 

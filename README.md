@@ -9,15 +9,16 @@ Domoticz Plugin For Frisquet Connect Boiler control
 
 
 # Features
-- Control mode (Confort, reduced and Frost Protection) for one or multiple zone(s)
-- Force one or multiple zone on a mode irrespectively of the program
+- Control one or multiple boilers
+- Control Heating mode (Confort, reduced and Frost Protection) for one or multiple zone(s)
+- Control setpoints for each of the heating mode for each of the zone
+- Force one or multiple zone on a mode irrespectively of the program (derogation and permanent mode)
 - Access the temperature from one or multiple zone(s)
 - Hot Water Control
+- Check Boiler energy consumption (in KWh)
 
 # Work in Progress
 - Add image for heating mode
-- kWh
-- Multiple boiler control
 - Boost control
 - On/Off control
 - Automatic/Manual trigger
@@ -26,7 +27,6 @@ Domoticz Plugin For Frisquet Connect Boiler control
 - Program
 - Alarms
 - Plugin update message
-- translation
 
 # Installation
 
@@ -45,6 +45,7 @@ Also check that the folder `FrisquetConnectDomoticz` and files are owned by the 
 # Configuration
 - Add a new Hardware and select "Frisquet-Connect"
 - Just enter your user and password
+- In case you have multiple boilers, create one instance of plugin per boiler and enter your boiler id in the dedicated parameters (you can retrieve them in the Frisquet app). Otherwise, just let the field empty
 - Devices should be created in the next minute
 
 Following devices are created, Zone dependent devices are created multiple times:
@@ -58,7 +59,18 @@ Device Name | Type | Zone Dependent | Fonction |
 |Mode Permanent Zone X | Selector Switch| Yes | Force the zone to a given mode |
 |Mode Dérogation | Selector Switch | No | Will force Confort or Reduce mode for all zone until the next cycle |
 |Mode Actuel Zone X | Text | Yes | Indicate the current heating mode |
-|Mode Eau Chaude Sanitaire | Selector Switch | No | Hot Water control |  
+|Mode Eau Chaude Sanitaire | Selector Switch | No | Hot Water control |
+|Consommation Chauffage | Managed Counter | Non | How many KWh consummed for heating |
+|Consommation ECS | Managed Counter | Non | How many KWh consummed for hot water |
+
+Please note that the boiler only provides energy consumption on a monthly agregate, and that the figures are updated only once a day, at midnight, for the previous day.
+Daily energy consumption is calculated by the plugin by substracting the total consumption of the previous day to the current consumption.
 
 # Contribute
 Submit your PR on the dev branch.
+
+#Version history
+0.1.0 Initial version
+0.2.0 Adding Permanent mode and current heating status. Code refactoring
+0.2.1 Adding Derogation mode
+0.3.0 Adding en/fr translation and energy consumption
