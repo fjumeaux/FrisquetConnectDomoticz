@@ -7,10 +7,9 @@
 #       Temperature Exterieure
 #       Vacances
 #       programmation / jour
-#       alarmes
 
 """
-<plugin key="Frisquet-connect" name="Frisquet-Connect" author="Krakinou" version="0.3.0" wikilink="https://github.com/Krakinou/FrisquetConnectDomoticz">
+<plugin key="Frisquet-connect" name="Frisquet-Connect" author="Krakinou" version="0.3.1" wikilink="https://github.com/Krakinou/FrisquetConnectDomoticz">
     <description>
         <h2>Frisquet-connect Domoticz</h2><br/>
         <br/>EN: Connector allowing Frisquet boiler control. A Frisquet-Connect box and an active account are required.
@@ -107,7 +106,7 @@ class FrisquetConnectPlugin:
 
         Domoticz.Debug(_("Starting Connect To Frisquet"))
         payload = {
-             "locale": "fr",
+             "locale": Settings["Language"],
              "email": Parameters["Username"],
              "password": Parameters["Password"],
              "type_client": "IOS"
@@ -368,18 +367,26 @@ class FrisquetConnectPlugin:
     def updateDeviceFromFrisquetboiler(self):
         for device_boiler in const.C_BOILER:
             device=Devices[int(device_boiler["unit"])]
-            if device_boiler["mode"] and device_boiler["mode"] == "MODE_ECS": #pour l'instant seulement ECS, donc on garde en dur
-                ecs_out=str(self.incomingPayload["ecs"]["MODE_ECS"]["id"])
-                Domoticz.Debug(_("Updating %(name)s , incoming value : %(value)s") % { "name":str(device.Name), "value":str(ecs_out)})
-                ecs_in= next((m["value_in"] for m in getattr(const, device_boiler["mode"], None) if m["value_out"] == ecs_out), None)
-                sValue=str(ecs_in)
-                nValue= next((m["nValue"]   for m in getattr(const, device_boiler["mode"], None) if m["value_out"] == ecs_out), None)
-                if device.sValue != sValue or self.deviceUpdatedMoreThan(device, 300):
-                    Domoticz.Debug(_("Updating %(name)s to value %(value)s") % { "name":str(device.Name), "value":sValue})
-                    if device.Unit in Devices:
-                        device.Update(nValue=int(nValue), sValue=sValue)
-#            else:
-#               TO DO
+            if not device_boiler["mode"]:
+                continue
+            mode = str(device_boiler["mode"])
+            if mode == "MODE_ECS":
+                value_out=str(self.incomingPayload["ecs"]["MODE_ECS"]["id"])
+                sValue=str(next((m["value_in"] for m in getattr(const, mode, None) if m["value_out"] == value_out), None))
+                nValue= next((m["nValue"]   for m in getattr(const, mode, None) if m["value_out"] == value_out), None)
+            if "alarmes" in mode:
+                alarm_list = self.incomingPayload.get(mode, [])
+                if alarm_list:
+                    value_out = sValue =str(alarm_list[0]["nom"])
+                    nValue=3
+                else:
+                    value_out = sValue = "Pas d'alertes"
+                    nValue=1
+            Domoticz.Debug(_("Updating %(name)s , incoming value : %(value)s") % { "name":str(device.Name), "value":str(value_out)})
+            if device.sValue != sValue or self.deviceUpdatedMoreThan(device, 300):
+                Domoticz.Debug(_("Updating %(name)s to value %(value)s") % { "name":str(device.Name), "value":sValue})
+                if device.Unit in Devices:
+                    device.Update(nValue=int(nValue), sValue=sValue)
 
     def createDeviceByZone(self, zone):
         #Zone 1 : 11 TAMB, 12 CONS_CONF, 13 CONS_RED, 14, CONS_HG, 15 MODE PERMANENT, 16 MODE ACTUEL

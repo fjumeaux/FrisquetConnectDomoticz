@@ -35,10 +35,12 @@ OPTIONS_DERO = {"LevelActions": "|| ||",
 
 
 C_BOILER = [
-    { "nom":"Mode Eau Chaude Sanitaire", "unit":"1", "mode":"MODE_ECS",  "TypeName":"Selector Switch", "Image":11, "Options":OPTIONS_ECS},
-    { "nom":"Mode Dérogation",           "unit":"2", "mode":"MODE_DERO", "TypeName":"Selector Switch", "Image":0,  "Options":OPTIONS_DERO},
-    { "nom":"Consommation Chauffage",    "unit":"3", "mode":"CHF",       "TypeName":None, "Type":243, "Subtype":33, "Image":0,  "Options":None},
-    { "nom":"Consommation ECS",          "unit":"4", "mode":"SAN",       "TypeName":None, "Type":243, "Subtype":33, "Image":0,  "Options":None}
+    { "nom":"Mode Eau Chaude Sanitaire", "unit":"1", "mode":"MODE_ECS",   "TypeName":"Selector Switch", "Image":11, "Options":OPTIONS_ECS},
+    { "nom":"Mode Dérogation",           "unit":"2", "mode":"MODE_DERO",  "TypeName":"Selector Switch", "Image":0,  "Options":OPTIONS_DERO},
+    { "nom":"Consommation Chauffage",    "unit":"3", "mode":"CHF",        "TypeName":None, "Type":243, "Subtype":33, "Image":0,  "Options":None},
+    { "nom":"Consommation ECS",          "unit":"4", "mode":"SAN",        "TypeName":None, "Type":243, "Subtype":33, "Image":0,  "Options":None},
+    { "nom":"Alarmes",                   "unit":"5", "mode":"alarmes",    "TypeName":"Alert",           "Image":0,  "Options":None},
+    { "nom":"Alarmes Pro",               "unit":"6", "mode":"alarmes_pro","TypeName":"Alert",           "Image":0,  "Options":None}
 ]
 
 

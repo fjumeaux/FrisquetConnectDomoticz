@@ -16,6 +16,7 @@ Domoticz Plugin For Frisquet Connect Boiler control
 - Access the temperature from one or multiple zone(s)
 - Hot Water Control
 - Check Boiler energy consumption (in KWh)
+- Be warned of any alerts on the Boiler
 
 # Work in Progress
 - Add image for heating mode
@@ -25,7 +26,6 @@ Domoticz Plugin For Frisquet Connect Boiler control
 - External temperature sensor
 - Holidays
 - Program
-- Alarms
 - Plugin update message
 
 # Installation
@@ -61,7 +61,9 @@ Device Name | Type | Zone Dependent | Fonction |
 |Mode Actuel Zone X | Text | Yes | Indicate the current heating mode |
 |Mode Eau Chaude Sanitaire | Selector Switch | No | Hot Water control |
 |Consommation Chauffage | Managed Counter | Non | How many KWh consummed for heating |
-|Consommation ECS | Managed Counter | Non | How many KWh consummed for hot water |
+|Consommation ECS | Managed Counter | No | How many KWh consummed for hot water |
+|Alertes | Alert | No | Any user alarms on the boiler |
+|Alertes Pro | Alert | No | Any Professional alarms on the boiler |
 
 Please note that the boiler only provides energy consumption on a monthly agregate, and that the figures are updated only once a day, at midnight, for the previous day.
 Daily energy consumption is calculated by the plugin by substracting the total consumption of the previous day to the current consumption.
@@ -74,3 +76,4 @@ Submit your PR on the dev branch.
  - 0.2.0 Adding Permanent mode and current heating status. Code refactoring
  - 0.2.1 Adding Derogation mode
  - 0.3.0 Adding multiple boilers control, energy consumption and fr/en translation
+ - 0.3.1 Adding Alarms devices
