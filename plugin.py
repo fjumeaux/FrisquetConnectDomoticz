@@ -596,8 +596,9 @@ class FrisquetConnectPlugin:
 
         # 10s * 90 = 15 minutes
         if self.beatCounter % 90 != 1:
-            self.ensure_token()
             return
+
+		self.ensure_token()
 
         if self.is_token_valid() and self.boilerID:
             self.getFrisquetData()
