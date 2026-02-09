@@ -603,9 +603,6 @@ class FrisquetConnectPlugin:
         if self.is_token_valid() and self.boilerID:
             self.getFrisquetData()
 
-        self.ensure_token()
-
-
 
 global _plugin
 _plugin = FrisquetConnectPlugin()
