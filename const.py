@@ -57,6 +57,7 @@ OPTIONS_MODE = {"LevelActions": "|| ||",
                 "LevelOffHidden": "false",
                 "SelectorStyle": "1"}
 MODE = [
+    { "nom":"Auto",     "value_out":"5", "value_in":"Auto",     "nValue":0},
     { "nom":"Confort",  "value_out":"6", "value_in":"Confort",  "nValue":0},
     { "nom":"Réduit",   "value_out":"7", "value_in":"Réduit",   "nValue":0 },
     { "nom":"Hors-Gel", "value_out":"8", "value_in":"Hors-Gel", "nValue":0}

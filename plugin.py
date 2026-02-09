@@ -93,12 +93,31 @@ class FrisquetConnectPlugin:
         caracteres = string.ascii_letters + string.digits
         return ''.join(random.choice(caracteres) for _ in range(longueur))
 
+#    def deviceUpdatedMoreThan(self, device, seconds):
+#        if device and device.Unit in Devices:
+#            Domoticz.Debug(_("Device %(name)s was last updated at %(date)s") % {"name": device.Name, "date": str(device.LastUpdate)})
+#            last = datetime.strptime(device.LastUpdate, "%Y-%m-%d %H:%M:%S")
+#            return (datetime.now() - last).total_seconds() > seconds
+#        return 0
+
     def deviceUpdatedMoreThan(self, device, seconds):
         if device and device.Unit in Devices:
-            Domoticz.Debug(_("Device %(name)s was last updated at %(date)s") % {"name": device.Name, "date": str(device.LastUpdate)})
-            last = datetime.strptime(device.LastUpdate, "%Y-%m-%d %H:%M:%S")
-            return (datetime.now() - last).total_seconds() > seconds
+            Domoticz.Debug(_("Device %(name)s was last updated at %(date)s") % {
+                "name": device.Name,
+                "date": str(device.LastUpdate)
+            })
+
+            # sécurité : certains devices nouvellement créés peuvent avoir LastUpdate vide
+            if not device.LastUpdate:
+                return 1
+
+            # import local => immunisé contre un datetime global écrasé
+            from datetime import datetime as dt
+            last = dt.strptime(device.LastUpdate, "%Y-%m-%d %H:%M:%S")
+            return (dt.now() - last).total_seconds() > seconds
         return 0
+
+
 
     def connectToFrisquet(self):
         if not self.active:
@@ -202,7 +221,7 @@ class FrisquetConnectPlugin:
         if value_out == False:
             if device_dero.nValue > 0:
                 Domoticz.Debug(_("Updating %s with value 0") %  str(device_dero.Name))
-                device.Update(nValue=0, sValue="0")
+                device_dero.Update(nValue=0, sValue="0")
             return
         sValue_dero=str(next( (m["value_in"] for m in const.MODE_DERO if m["value_out"] == str(zone["carac_zone"]["MODE"])), None))
         Domoticz.Debug(_("Switch Selector value is %s, value to update is %d") %  (str(zone["carac_zone"]["MODE"]),  sValue_dero))
@@ -428,6 +447,9 @@ class FrisquetConnectPlugin:
     def onStart(self):
         setup_i18n()
 
+        # Force le heartbeat à 10s (valeur "safe" Domoticz)
+        Domoticz.Heartbeat(10)
+
         Domoticz.Status(_("Starting Frisquet-connect"))
 
         if Parameters["Mode6"] != "0":
@@ -567,13 +589,21 @@ class FrisquetConnectPlugin:
     def onHeartbeat(self):
         if not self.active: #pb avec le numéro de chaudiere
             return
+
         self.beatCounter += 1
-        if self.beatCounter % 3 != 1:
+        if self.beatCounter > 100000:
+            self.beatCounter = 0
+
+        # 10s * 90 = 15 minutes
+        if self.beatCounter % 90 != 1:
+            self.ensure_token()
             return
+
         if self.is_token_valid() and self.boilerID:
             self.getFrisquetData()
-        #on renouvelle le token à la fin du heartbeat pour éviter les problèmes entre la réponse du renouvellement et la nouvelle demande de données
+
         self.ensure_token()
+
 
 
 global _plugin
