@@ -544,9 +544,9 @@ class FrisquetConnectPlugin:
         match Connection.Name:
             case "connectToFrisquetAPI":
                 self.auth_token = self.incomingPayload["token"]
-				token_str = str(self.auth_token or "")
-				Domoticz.Debug(_("token received (masked): ...%(suffix)s (len=%(ln)d)") % {"suffix": token_str[-6:] if len(token_str) >= 6 else token_str,"ln": len(token_str)})
-				self.token_expiry = time.time() + 86400
+                token_str = str(self.auth_token or "")
+                Domoticz.Debug(_("token received (masked): ...%(suffix)s (len=%(ln)d)") % {"suffix": token_str[-6:] if len(token_str) >= 6 else token_str,"ln": len(token_str)})
+                self.token_expiry = time.time() + 86400
                 if not self.boilerID:
                     self.boilerID = self.incomingPayload["utilisateur"]["sites"][0]["identifiant_chaudiere"]
                 Domoticz.Debug(_("Boiler ID : ") + self.boilerID)
