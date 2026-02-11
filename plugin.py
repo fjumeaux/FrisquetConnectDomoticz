@@ -589,16 +589,24 @@ class FrisquetConnectPlugin:
         pass
 
     def onHeartbeat(self):
-        if not self.active: #pb avec le numéro de chaudiere
+        if not self.active:  # pb avec le numéro de chaudiere
             return
 
-        self.beatCounter += 1
-        if self.beatCounter > 100000:
-            self.beatCounter = 0
+        now = datetime.now()
+        quarter = (now.minute // 15) * 15  # 0, 15, 30, 45
+        slot_id = now.strftime("%Y-%m-%d %H:") + f"{quarter:02d}"
 
-        # 10s * 90 = 15 minutes
-        if self.beatCounter % 90 != 1:
+        # On ne poll qu'au tout début du quart d'heure (fenêtre de 10 secondes)
+        # Heartbeat=10s => on verra typiquement now.second = 0..9 sur un tick
+        if now.minute % 15 != 0:
             return
+        if now.second >= 10:
+            return
+
+        # anti-double déclenchement (si Domoticz appelle 2 fois dans la fenêtre)
+        if self.last_quarter_polled == slot_id:
+            return
+        self.last_quarter_polled = slot_id
 
         self.ensure_token()
 
