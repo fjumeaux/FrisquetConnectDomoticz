@@ -75,6 +75,7 @@ class FrisquetConnectPlugin:
         self.boilerID = None
         self.beatCounter = 0
         self.onceADay = None
+        self.last_quarter_polled = None  # mémorise le dernier quart d'heure exécuté
         self.initializeEnergy = []
         return
 
