@@ -554,7 +554,7 @@ class FrisquetConnectPlugin:
                 Domoticz.Debug(_("Boiler ID : ") + self.boilerID)
                 self.httpConn.Disconnect()
             case "getFrisquetData":
-                Domoticz.Status("Polling API Frisquet Ok"
+                Domoticz.Status("Polling API Frisquet Ok")
                 self.createDeviceboiler()
                 self.updateDeviceFromFrisquetboiler()
                 for zone in self.incomingPayload["zones"]:
