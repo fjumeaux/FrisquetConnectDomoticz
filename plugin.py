@@ -536,7 +536,7 @@ class FrisquetConnectPlugin:
             self.token_expiry = 0
             return
         elif not 200 <= Status < 300:
-            Domoticz.Status("Polling API Frisquet KO")
+            Domoticz.Error("Polling API Frisquet KO")
             if self.incomingPayload is not None and self.incomingPayload.get("message"):
                 message = str(self.incomingPayload["message"])
                 Domoticz.Log(_("Server send an error %(status)d - %(message)s for %(name)s") % { "status":Status,  "message":message, "name":Connection.Name})
