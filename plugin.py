@@ -1,5 +1,5 @@
 # Frisquet connect api plugin pour Domoticz
-# Auteur intial: Krakinou
+# Auteur initial: Krakinou
 # Refork: fjumeaux
 #TODO : BOOST
 #       Chaudière en veille
