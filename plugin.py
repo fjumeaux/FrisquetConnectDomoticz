@@ -536,6 +536,7 @@ class FrisquetConnectPlugin:
             self.token_expiry = 0
             return
         elif not 200 <= Status < 300:
+            Domoticz.Status("Polling API Frisquet KO")
             if self.incomingPayload is not None and self.incomingPayload.get("message"):
                 message = str(self.incomingPayload["message"])
                 Domoticz.Log(_("Server send an error %(status)d - %(message)s for %(name)s") % { "status":Status,  "message":message, "name":Connection.Name})
@@ -553,6 +554,7 @@ class FrisquetConnectPlugin:
                 Domoticz.Debug(_("Boiler ID : ") + self.boilerID)
                 self.httpConn.Disconnect()
             case "getFrisquetData":
+                Domoticz.Status("Polling API Frisquet Ok"
                 self.createDeviceboiler()
                 self.updateDeviceFromFrisquetboiler()
                 for zone in self.incomingPayload["zones"]:
@@ -608,6 +610,7 @@ class FrisquetConnectPlugin:
             return
         self.last_quarter_polled = slot_id
 
+        Domoticz.Status("Interrogation API Frisquet")
         self.ensure_token()
 
         if self.is_token_valid() and self.boilerID:
