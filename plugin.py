@@ -598,11 +598,11 @@ class FrisquetConnectPlugin:
         quarter = (now.minute // 15) * 15  # 0, 15, 30, 45
         slot_id = now.strftime("%Y-%m-%d %H:") + f"{quarter:02d}"
 
-        # On ne poll qu'au tout début du quart d'heure (fenêtre de 10 secondes)
+        # On ne poll qu'au tout début du quart d'heure à + 10s (sur une fenêtre de 10 secondes)
         # Heartbeat=10s => on verra typiquement now.second = 0..9 sur un tick
         if now.minute % 15 != 0:
             return
-        if now.second >= 10:
+        if now.second < 10 or now.second >= 20:
             return
 
         # anti-double déclenchement (si Domoticz appelle 2 fois dans la fenêtre)
