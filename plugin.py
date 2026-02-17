@@ -9,7 +9,7 @@
 #       programmation / jour
 
 """
-<plugin key="Frisquet-connect" name="Frisquet-Connect" author="Krakinou" version="0.3.1" wikilink="https://github.com/Krakinou/FrisquetConnectDomoticz">
+<plugin key="Frisquet-connect" name="Frisquet-Connect" author="fj refork Krakinou" version="0.3.1" wikilink="https://github.com/Krakinou/FrisquetConnectDomoticz">
     <description>
         <h2>Frisquet-connect Domoticz</h2><br/>
         <br/>EN: Connector allowing Frisquet boiler control. A Frisquet-Connect box and an active account are required.
