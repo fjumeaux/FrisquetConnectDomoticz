@@ -109,16 +109,22 @@ class FrisquetConnectPlugin:
             })
 
             # sécurité : certains devices nouvellement créés peuvent avoir LastUpdate vide
-            if not device.LastUpdate:
+            lu = device.LastUpdate
+            if not lu:
                 return 1
 
-            # import local => immunisé contre un datetime global écrasé
             from datetime import datetime as dt
-            last = dt.strptime(device.LastUpdate, "%Y-%m-%d %H:%M:%S")
+            import time
+
+            # Parsing robuste sans dt.strptime (évite le bug NoneType callable)
+            try:
+                last = dt(*time.strptime(lu, "%Y-%m-%d %H:%M:%S")[0:6])
+            except Exception:
+                # si LastUpdate est invalide/bizarre => on force l'update
+                return 1
+
             return (dt.now() - last).total_seconds() > seconds
         return 0
-
-
 
     def connectToFrisquet(self):
         if not self.active:
