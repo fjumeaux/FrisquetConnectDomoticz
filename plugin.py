@@ -587,12 +587,12 @@ class FrisquetConnectPlugin:
             case _:
                 Domoticz.Error(_("Unknown connection"))
 
-        finally:
-            # IMPORTANT : on ferme toujours la connexion qui a livré ce message
-            try:
-                Connection.Disconnect()
-            except Exception:
-                pass
+    finally:
+        # IMPORTANT : on ferme toujours la connexion qui a livré ce message
+        try:
+            Connection.Disconnect()
+        except Exception:
+            pass
 
 
 	
