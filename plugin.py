@@ -563,29 +563,29 @@ class FrisquetConnectPlugin:
                     Domoticz.Log(_("Server send an error %d for %s") % (Status, Connection.Name))
                 return		
 		
-        match Connection.Name:
-            case "connectToFrisquetAPI":
-                self.auth_token = self.incomingPayload["token"]
-                token_str = str(self.auth_token or "")
-                Domoticz.Debug(_("token received (masked): ...%(suffix)s (len=%(ln)d)") % {"suffix": token_str[-6:] if len(token_str) >= 6 else token_str,"ln": len(token_str)})
-                self.token_expiry = time.time() + 86400
-                if not self.boilerID:
-                    self.boilerID = self.incomingPayload["utilisateur"]["sites"][0]["identifiant_chaudiere"]
-                Domoticz.Debug(_("Boiler ID : ") + self.boilerID)
-            case "getFrisquetData":
-                Domoticz.Status("Polling API Frisquet Ok")
-                self.createDeviceboiler()
-                self.updateDeviceFromFrisquetboiler()
-                for zone in self.incomingPayload["zones"]:
-                    self.createDeviceByZone(zone)
-                    self.updateDeviceFromFrisquetByZone(zone)
-                self.getFrisquetEnergy()
-            case "getFrisquetEnergy":
-                self.updateEnergyFromFrisquet(self.incomingPayload)
-            case "pushUpdateToFrisquet":
-                Domoticz.Debug(_("Data has been sent and received"))
-            case _:
-                Domoticz.Error(_("Unknown connection"))
+    match Connection.Name:
+        case "connectToFrisquetAPI":
+            self.auth_token = self.incomingPayload["token"]
+            token_str = str(self.auth_token or "")
+            Domoticz.Debug(_("token received (masked): ...%(suffix)s (len=%(ln)d)") % {"suffix": token_str[-6:] if len(token_str) >= 6 else token_str,"ln": len(token_str)})
+            self.token_expiry = time.time() + 86400
+            if not self.boilerID:
+                self.boilerID = self.incomingPayload["utilisateur"]["sites"][0]["identifiant_chaudiere"]
+            Domoticz.Debug(_("Boiler ID : ") + self.boilerID)
+        case "getFrisquetData":
+            Domoticz.Status("Polling API Frisquet Ok")
+            self.createDeviceboiler()
+            self.updateDeviceFromFrisquetboiler()
+            for zone in self.incomingPayload["zones"]:
+                self.createDeviceByZone(zone)
+                self.updateDeviceFromFrisquetByZone(zone)
+            self.getFrisquetEnergy()
+        case "getFrisquetEnergy":
+            self.updateEnergyFromFrisquet(self.incomingPayload)
+        case "pushUpdateToFrisquet":
+            Domoticz.Debug(_("Data has been sent and received"))
+        case _:
+            Domoticz.Error(_("Unknown connection"))
 
     finally:
         # IMPORTANT : on ferme toujours la connexion qui a livré ce message
