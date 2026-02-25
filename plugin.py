@@ -85,12 +85,30 @@ class FrisquetConnectPlugin:
         return
 
     def is_token_valid(self):
-        return self.auth_token is not None and time.time() < self.token_expiry
+        if not self.auth_token:
+            return False
+        # token considéré invalide s'il est "trop vieux"
+        return (time.time() - self.token_obtained_at) < self.token_ttl_safe
 
-    def ensure_token(self):
-        if not self.is_token_valid():
-            Domoticz.Debug(_("Invalid or expired token, new token retrieval"))
-            self.connectToFrisquet()
+    def ensure_token(self, want_retry=None):
+        if self.is_token_valid():
+            return True
+
+        # on mémorise l'action à relancer après auth
+        if want_retry:
+            self.retry_after_auth = want_retry
+
+        # anti-spam + éviter auth concurrentes
+        if self.auth_in_progress:
+            return False
+        if time.time() < self.next_auth_allowed:
+            return False
+
+        self.auth_in_progress = True
+        self.next_auth_allowed = time.time() + 60  # cooldown 60s
+        Domoticz.Debug(_("Token absent/trop ancien -> ré-authentification"))
+        self.connectToFrisquet()
+        return False
 
     def formatBoiler(self, s: str) -> bool:
         return isinstance(s, str) and len(s) == 14 and s.isdigit()
