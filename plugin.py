@@ -429,12 +429,30 @@ class FrisquetConnectPlugin:
             device = Devices[int(device_boiler["unit"])]
             if not device_boiler["mode"]:
                 continue
+
             mode = str(device_boiler["mode"])
-            if mode == "MODE_ECS":
+
+            # --- NOUVEAU : Température extérieure (environnement.T_EXT) ---
+            if mode == "T_EXT":
+                value_out = self.incomingPayload.get("environnement", {}).get("T_EXT", None)
+
+                # si null => pas de sonde extérieure, on ne met pas à jour
+                if value_out is None:
+                    Domoticz.Debug(_("T_EXT is null (no outdoor probe?) -> skip update"))
+                    continue
+
+                # Frisquet = dixièmes de °C
+                sValue = str(value_out / 10.0)
+                nValue = 0
+
+            # --- EXISTANT : MODE_ECS ---
+            elif mode == "MODE_ECS":
                 value_out = str(self.incomingPayload["ecs"]["MODE_ECS"]["id"])
                 sValue = str(next((m["value_in"] for m in getattr(const, mode, None) if m["value_out"] == value_out), None))
                 nValue = next((m["nValue"] for m in getattr(const, mode, None) if m["value_out"] == value_out), None)
-            if "alarmes" in mode:
+
+            # --- EXISTANT : alarmes / alarmes_pro ---
+            elif "alarmes" in mode:
                 alarm_list = self.incomingPayload.get(mode, [])
                 if alarm_list:
                     value_out = sValue = str(alarm_list[0]["nom"])
@@ -442,11 +460,16 @@ class FrisquetConnectPlugin:
                 else:
                     value_out = sValue = "Pas d'alertes"
                     nValue = 1
+
+            # mode non géré ici
+            else:
+                continue
+
             Domoticz.Debug(_("Updating %(name)s , incoming value : %(value)s") % {"name": str(device.Name), "value": str(value_out)})
-            if device.sValue != sValue or self.deviceUpdatedMoreThan(device, 300):
-                Domoticz.Debug(_("Updating %(name)s to value %(value)s") % {"name": str(device.Name), "value": sValue})
+            if str(device.sValue) != str(sValue) or self.deviceUpdatedMoreThan(device, 300):
+                Domoticz.Debug(_("Updating %(name)s to value %(value)s") % {"name": str(device.Name), "value": str(sValue)})
                 if device.Unit in Devices:
-                    device.Update(nValue=int(nValue), sValue=sValue)
+                    device.Update(nValue=int(nValue), sValue=str(sValue))
 
     def createDeviceByZone(self, zone):
         #Zone 1 : 11 TAMB, 12 CONS_CONF, 13 CONS_RED, 14, CONS_HG, 15 MODE PERMANENT, 16 MODE ACTUEL
