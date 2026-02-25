@@ -77,6 +77,11 @@ class FrisquetConnectPlugin:
         self.onceADay = None
         self.last_quarter_polled = None  # mémorise le dernier quart d'heure exécuté
         self.initializeEnergy = []
+        self.token_obtained_at = 0
+        self.token_ttl_safe = 20 * 3600  # 20h (mets 12h si tu veux être encore plus safe)
+        self.retry_after_auth = None
+        self.auth_in_progress = False
+        self.next_auth_allowed = 0		
         return
 
     def is_token_valid(self):
