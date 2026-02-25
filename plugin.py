@@ -509,7 +509,11 @@ class FrisquetConnectPlugin:
                         Options=device_boiler["Options"],
                         Image=device_boiler["Image"]
                     ).Create()
-                self.initializeEnergy.append((device_boiler["unit"], device_boiler["mode"]))
+
+                # On n'initialise l'historique que pour les compteurs d'énergie
+                if device_boiler.get("mode") in ("CHF", "SAN"):
+                    self.initializeEnergy.append((device_boiler["unit"], device_boiler["mode"]))
+
 
     def onStart(self):
         setup_i18n()
