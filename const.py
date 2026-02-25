@@ -40,7 +40,8 @@ C_BOILER = [
     { "nom":"Consommation Chauffage",    "unit":"3", "mode":"CHF",        "TypeName":None, "Type":243, "Subtype":33, "Image":0,  "Options":None},
     { "nom":"Consommation ECS",          "unit":"4", "mode":"SAN",        "TypeName":None, "Type":243, "Subtype":33, "Image":0,  "Options":None},
     { "nom":"Alarmes",                   "unit":"5", "mode":"alarmes",    "TypeName":"Alert",           "Image":0,  "Options":None},
-    { "nom":"Alarmes Pro",               "unit":"6", "mode":"alarmes_pro","TypeName":"Alert",           "Image":0,  "Options":None}
+    { "nom":"Alarmes Pro",               "unit":"6", "mode":"alarmes_pro","TypeName":"Alert",           "Image":0,  "Options":None},
+    { "nom":"Température extérieure",    "unit":"7", "mode":"T_EXT",      "TypeName":"Temperature",     "Image":0,  "Options":None}
 ]
 
 
