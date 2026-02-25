@@ -154,10 +154,6 @@ class FrisquetConnectPlugin:
         if not self.active:
             return
 
-        # garde-fou anti-spam (au cas où connectToFrisquet serait appelé hors ensure_token)
-        if self.auth_in_progress and time.time() < self.next_auth_allowed:
-            return
-
         Domoticz.Debug(_("Starting Connect To Frisquet"))
         payload = {
             "locale": Settings["Language"],
@@ -545,6 +541,8 @@ class FrisquetConnectPlugin:
 
         if (Status != 0):
             Domoticz.Log(_("Failed to connect (%(status)s) to %(address)s with error %(error)s") % {"status": str(Status), "address": Parameters["Address"], "error": Description})
+            if Connection.Name == "connectToFrisquetAPI":
+                self.auth_in_progress = False
             return
 
         match Connection.Name:
