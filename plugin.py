@@ -568,12 +568,24 @@ class FrisquetConnectPlugin:
                     Domoticz.Error(_("Login Error : Username or password incorrect?"))
                     self.auth_token = None
                     self.token_expiry = 0
+                    self.auth_in_progress = False
+                    self.retry_after_auth = None
                     return
                 else:
-                    Domoticz.Error(_("Access denied (%d) on %s: token probably expired/invalid") % (Status, Connection.Name))
+                    # Token refusé côté serveur -> on ré-auth puis on relancera le GET
+                    Domoticz.Log(_("Access denied (%d) on %s: token expired/invalid -> re-auth") % (Status, Connection.Name))
                     self.auth_token = None
                     self.token_expiry = 0
-                    # On relance une auth (immédiate) pour récupérer un token
+
+                    # on prévoit de rejouer automatiquement la requête qui a échoué
+                    if Connection.Name == "getFrisquetData":
+                        self.retry_after_auth = "getFrisquetData"
+                    elif Connection.Name == "getFrisquetEnergy":
+                        self.retry_after_auth = "getFrisquetEnergy"
+                    else:
+                        self.retry_after_auth = None
+
+                    self.auth_in_progress = True
                     self.connectToFrisquet()
                     return
 
@@ -597,9 +609,12 @@ class FrisquetConnectPlugin:
                         Domoticz.Error(_("Auth OK but no token in response"))
                         self.auth_token = None
                         self.token_expiry = 0
+                        self.auth_in_progress = False
+                        self.retry_after_auth = None
                         return
 
                     self.auth_token = self.incomingPayload["token"]
+                    self.auth_in_progress = False
                     token_str = str(self.auth_token or "")
                     Domoticz.Debug(_("token received (masked): ...%(suffix)s (len=%(ln)d)") % {
                         "suffix": token_str[-6:] if len(token_str) >= 6 else token_str,
@@ -613,10 +628,21 @@ class FrisquetConnectPlugin:
                             self.boilerID = self.incomingPayload["utilisateur"]["sites"][0]["identifiant_chaudiere"]
                         except Exception:
                             Domoticz.Error(_("Unable to extract boilerID from auth response"))
+                            self.auth_in_progress = False
+                            self.retry_after_auth = None							
                             return
 
                     Domoticz.Debug(_("Boiler ID : ") + str(self.boilerID))
-
+                    # Rejoue automatiquement la requête qui attendait un nouveau token
+                    if self.retry_after_auth == "getFrisquetData":
+                        self.retry_after_auth = None
+                        if self.boilerID:
+                            self.getFrisquetData()
+                    elif self.retry_after_auth == "getFrisquetEnergy":
+                        self.retry_after_auth = None
+                        if self.boilerID:
+                            self.getFrisquetEnergy()
+							
                 case "getFrisquetData":
                     Domoticz.Status("Polling API Frisquet Ok")
 
