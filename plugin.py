@@ -80,11 +80,18 @@ class FrisquetConnectPlugin:
         self.token_expiry = 0
 
         self.token_obtained_at = 0
-        self.token_ttl_safe = 20 * 3600  # 20h (mets 12h si tu veux être encore plus safe)
+        # 24h - marge 5 minutes, conforme recommandation Frisquet (auth 1 fois / 24h)
+        self.token_ttl_safe = (24 * 3600) - 300  # 23h55
 
         self.retry_after_auth = None
         self.auth_in_progress = False
         self.next_auth_allowed = 0
+
+        # --- PATCH: cache token sur disque (survit aux redémarrages Domoticz) ---
+        self.token_cache_file = None  # défini dans onStart() quand Parameters est dispo
+
+        # --- PATCH: en cas d'erreur, on attend le poll suivant (15 min) ---
+        self.next_poll_allowed = 0
 
         self.boilerID = None
         self.beatCounter = 0
@@ -92,6 +99,45 @@ class FrisquetConnectPlugin:
         self.last_quarter_polled = None  # mémorise le dernier quart d'heure exécuté
         self.initializeEnergy = []
         return
+
+    # ---------------------------
+    # PATCH: token cache helpers
+    # ---------------------------
+    def load_token_cache(self):
+        if not self.token_cache_file:
+            return
+        try:
+            if os.path.exists(self.token_cache_file):
+                with open(self.token_cache_file, "r") as f:
+                    data = json.load(f)
+                self.auth_token = data.get("token")
+                self.token_obtained_at = float(data.get("obtained_at", 0))
+                if self.auth_token:
+                    token_str = str(self.auth_token or "")
+                    Domoticz.Debug(_("Token loaded from cache (masked): ...%(suffix)s") % {
+                        "suffix": token_str[-6:] if len(token_str) >= 6 else token_str
+                    })
+        except Exception as e:
+            Domoticz.Debug(_("Token cache read failed: %s") % str(e))
+
+    def save_token_cache(self):
+        if not self.token_cache_file:
+            return
+        try:
+            data = {"token": self.auth_token, "obtained_at": self.token_obtained_at}
+            with open(self.token_cache_file, "w") as f:
+                json.dump(data, f)
+        except Exception as e:
+            Domoticz.Debug(_("Token cache write failed: %s") % str(e))
+
+    def clear_token_cache(self):
+        if not self.token_cache_file:
+            return
+        try:
+            if os.path.exists(self.token_cache_file):
+                os.remove(self.token_cache_file)
+        except Exception:
+            pass
 
     def is_token_valid(self):
         if not self.auth_token:
@@ -188,10 +234,10 @@ class FrisquetConnectPlugin:
 
     def getFrisquetEnergy(self):
         now = datetime.now()
-        #We update energy only once a day and not between midnight and 1AM as the boiler may have not updated it yet
+        # We update energy only once a day and not between midnight and 1AM as the boiler may have not updated it yet
         if self.onceADay is not None and ((self.onceADay.date() == now.date() or now.hour == 0)):
             return
-        if self.onceADay is None:  #We intialize it at 1AM so that the cycle starts in the night
+        if self.onceADay is None:  # We initialize it at 1AM so that the cycle starts in the night
             self.onceADay = now.replace(hour=1, minute=0, second=0)
         else:
             self.onceADay = now
@@ -209,7 +255,7 @@ class FrisquetConnectPlugin:
 
     def getValue(self, Unit, out, Level):
         device = Devices[Unit]
-        if device.Unit > 9:  #zone
+        if device.Unit > 9:  # zone
             mode = next((m["mode"] for m in const.C_ZONE if m["unit"] == str(Unit)[1]), None)
             value = next((m[out] for m in getattr(const, mode, None) if m["value_in"] == Level), None)
         else:
@@ -221,14 +267,14 @@ class FrisquetConnectPlugin:
         Domoticz.Debug(_("Starting Push Data"))
 
         device = Devices[Unit]
-        if device.Type == 242:  #setpoint is always by zone
-            #str(Unit)[0] is the zone number
+        if device.Type == 242:  # setpoint is always by zone
+            # str(Unit)[0] is the zone number
             cle = next((m["mode"] for m in const.C_ZONE if m["unit"] == str(Unit)[1]), None) + '_Z' + str(Unit)[0]
             payloadValeur = Level * 10
-        if device.Type == 244:  #switch selector
+        if device.Type == 244:  # switch selector
             if Devices[Unit].Unit > 9:  # zone value
                 cle = next((m["mode"] for m in const.C_ZONE if m["unit"] == str(Unit)[1]), None) + '_Z' + str(Unit)[0]
-            else:  #General value for the boiler
+            else:  # General value for the boiler
                 cle = next((m["mode"] for m in const.C_BOILER if m["unit"] == str(Unit)), None)
             payloadValeur = self.getValue(device.Unit, "value_out", Level)
         payload = [{"cle": cle, "valeur": payloadValeur}]
@@ -245,8 +291,9 @@ class FrisquetConnectPlugin:
         self.httpConn.Connect()
 
     def updateModeDero(self, zone, value_out):
-        #Dero is a true/false flag inside the zone, but the trigger is made on the whole boiler. So there are at least 2 devices (at least) : one for the zone
-        # which is read-only and the boiler-level one which is modifiable
+        # Dero is a true/false flag inside the zone, but the trigger is made on the whole boiler.
+        # So there are at least 2 devices (at least) : one for the zone which is read-only and
+        # the boiler-level one which is modifiable
         device_dero = Devices[int(next((m["unit"] for m in const.C_BOILER if m["mode"] == "MODE_DERO"), None))]
         if not device_dero.Unit in Devices:
             return
@@ -333,7 +380,7 @@ class FrisquetConnectPlugin:
         ]
 
     def getLastEnergyOfMonth(self, boiler_id, type_energy, day, month, year):
-        #which is not yesterday
+        # which is not yesterday
         data = self.getEnergyFiltered(boiler_id, type_energy)
         filtered = []
         for entry in data:
@@ -362,7 +409,7 @@ class FrisquetConnectPlugin:
             date_yesterday = date.today() - timedelta(days=1)
             energy_total = self.getenergyFromJSON(incomingPayload, type_energy, date_yesterday.month, str(date_yesterday.year))
             if energy_total:
-                energy_total = energy_total * 1000  #frisquet provides KWh, domoticz await for Wh
+                energy_total = energy_total * 1000  # frisquet provides KWh, domoticz await for Wh
             else:
                 energy_total = 0
             Domoticz.Debug(_("for %(name)s , total energy consumption is %(te)d KWh at %(date)s") % {"name": str(device.Name), "te": energy_total, "date": str(date_yesterday.strftime("%Y-%m-%d"))})
@@ -379,8 +426,8 @@ class FrisquetConnectPlugin:
     def InitEnergyFromFrisquet(self, device_init, incomingPayload):
         device = Devices[int(device_init[0])]
         type_energy = device_init[1]
-        date_trt = (datetime.now() - relativedelta(months=24))  #la chaudiere fourni uniquement 2 ans d'historiques
-        date_trt = date(date_trt.year, date_trt.month, 1) + relativedelta(months=1, days=-1)  #We have only one value per month, so we set it on the last day
+        date_trt = (datetime.now() - relativedelta(months=24))  # la chaudiere fourni uniquement 2 ans d'historiques
+        date_trt = date(date_trt.year, date_trt.month, 1) + relativedelta(months=1, days=-1)  # We have only one value per month, so we set it on the last day
         first_day_of_month = datetime.now().replace(day=1).date()
         Domoticz.Debug(_("Initializing energy data for %(name)s between %(d1)s and %(d2)s") % {"name": str(device.Name), "d1": str(date_trt.strftime("%Y-%m-%d")), "d2": str(first_day_of_month.strftime("%Y-%m-%d"))})
         if not type_energy in incomingPayload:
@@ -389,7 +436,7 @@ class FrisquetConnectPlugin:
             Domoticz.Debug(_("Processing ") + str(date_trt.strftime("%Y-%m-%d")))
             energy_total = self.getenergyFromJSON(incomingPayload, type_energy, date_trt.month, str(date_trt.year))
             if energy_total:
-                energy_total = energy_total * 1000  #frisquet fourni des KWh, domoticz attend des Wh
+                energy_total = energy_total * 1000  # frisquet fourni des KWh, domoticz attend des Wh
                 Domoticz.Debug(_("For %(name)s , total energy consumption is %(te)d KWh at %(date)s") % {"name": str(device.Name), "te": str(energy_total), "date": str(date_trt.strftime("%Y-%m-%d"))})
                 device.Update(nValue=0, sValue="-1;" + str(energy_total) + ";" + str(date_trt))
             else:
@@ -468,8 +515,8 @@ class FrisquetConnectPlugin:
                     device.Update(nValue=int(nValue), sValue=str(sValue))
 
     def createDeviceByZone(self, zone):
-        #Zone 1 : 11 TAMB, 12 CONS_CONF, 13 CONS_RED, 14, CONS_HG, 15 MODE PERMANENT, 16 MODE ACTUEL
-        #Zone 2:  21 TAMB, 22 CONS_CONF, etc.
+        # Zone 1 : 11 TAMB, 12 CONS_CONF, 13 CONS_RED, 14, CONS_HG, 15 MODE PERMANENT, 16 MODE ACTUEL
+        # Zone 2:  21 TAMB, 22 CONS_CONF, etc.
         num_zone = str(zone["numero"])
         nom_zone = zone["nom"]
         for device_zone in const.C_ZONE:
@@ -510,7 +557,6 @@ class FrisquetConnectPlugin:
                 if device_boiler.get("mode") in ("CHF", "SAN"):
                     self.initializeEnergy.append((device_boiler["unit"], device_boiler["mode"]))
 
-
     def onStart(self):
         setup_i18n()
 
@@ -530,7 +576,11 @@ class FrisquetConnectPlugin:
         if Parameters["Mode1"]:
             self.boilerID = Parameters["Mode1"]
 
-        # Démarrage: on force une auth (et on autorise la requête getFrisquetData dès que token reçu)
+        # --- PATCH: init cache file + load token cache ---
+        self.token_cache_file = os.path.join(Parameters["HomeFolder"], "frisquet_token_cache.json")
+        self.load_token_cache()
+
+        # Démarrage: on force une auth si token absent/invalide (et on autorise la requête getFrisquetData dès que token reçu)
         self.ensure_token(want_retry="getFrisquetData")
 
     def onStop(self):
@@ -540,9 +590,17 @@ class FrisquetConnectPlugin:
         Domoticz.Debug(_("onConnect started for  : ") + str(Connection.Name))
 
         if (Status != 0):
-            Domoticz.Log(_("Failed to connect (%(status)s) to %(address)s with error %(error)s") % {"status": str(Status), "address": Parameters["Address"], "error": Description})
+            Domoticz.Log(_("WARNING: Failed to connect (%(status)s) for %(name)s: %(error)s") % {
+                "status": str(Status),
+                "name": str(Connection.Name),
+                "error": str(Description)
+            })
+
             if Connection.Name == "connectToFrisquetAPI":
                 self.auth_in_progress = False
+
+            # --- PATCH: on n'insiste pas, on attend le prochain poll (15 min) ---
+            self.next_poll_allowed = time.time() + (15 * 60)
             return
 
         match Connection.Name:
@@ -612,6 +670,10 @@ class FrisquetConnectPlugin:
             except (TypeError, json.JSONDecodeError):
                 self.incomingPayload = None
 
+            # --- PATCH: si ça répond en 2xx, on lève un éventuel cooldown ---
+            if 200 <= Status < 300:
+                self.next_poll_allowed = 0
+
             # --- Gestion auth / token ---
             if Status in (401, 403):
                 if Connection.Name == "connectToFrisquetAPI":
@@ -621,6 +683,10 @@ class FrisquetConnectPlugin:
                     self.token_obtained_at = 0
                     self.auth_in_progress = False
                     self.retry_after_auth = None
+                    # token invalide => on nettoie le cache
+                    self.clear_token_cache()
+                    # --- PATCH: on attend le prochain poll ---
+                    self.next_poll_allowed = time.time() + (15 * 60)
                     return
                 else:
                     # Token refusé côté serveur -> on ré-auth puis on relancera le GET
@@ -628,6 +694,7 @@ class FrisquetConnectPlugin:
                     self.auth_token = None
                     self.token_expiry = 0
                     self.token_obtained_at = 0
+                    self.clear_token_cache()
 
                     # on prévoit de rejouer automatiquement la requête qui a échoué
                     if Connection.Name == "getFrisquetData":
@@ -639,7 +706,10 @@ class FrisquetConnectPlugin:
 
                     # on repasse par ensure_token pour profiter du cooldown
                     self.auth_in_progress = False
-                    self.ensure_token()
+
+                    # --- PATCH: si ré-auth échoue, ne pas insister avant le prochain poll ---
+                    if not self.ensure_token():
+                        self.next_poll_allowed = time.time() + (15 * 60)
                     return
 
             # --- Gestion erreurs HTTP hors 2xx ---
@@ -653,6 +723,10 @@ class FrisquetConnectPlugin:
                     })
                 else:
                     Domoticz.Log(_("Server send an error %d for %s") % (Status, Connection.Name))
+
+                # --- PATCH: on attend le prochain poll (15 min) ---
+                Domoticz.Log(_("WARNING: HTTP error %d on %s -> pause until next poll") % (Status, Connection.Name))
+                self.next_poll_allowed = time.time() + (15 * 60)
                 return
 
             # --- Traitement "OK" ---
@@ -665,12 +739,17 @@ class FrisquetConnectPlugin:
                         self.token_obtained_at = 0
                         self.auth_in_progress = False
                         self.retry_after_auth = None
+                        # --- PATCH: on attend le prochain poll ---
+                        self.next_poll_allowed = time.time() + (15 * 60)
                         return
 
                     self.auth_token = self.incomingPayload["token"]
                     self.token_obtained_at = time.time()
                     self.token_expiry = 0
                     self.auth_in_progress = False
+
+                    # --- PATCH: persist token ---
+                    self.save_token_cache()
 
                     token_str = str(self.auth_token or "")
                     Domoticz.Debug(_("token received (masked): ...%(suffix)s (len=%(ln)d)") % {
@@ -687,6 +766,9 @@ class FrisquetConnectPlugin:
                             self.token_obtained_at = 0
                             self.auth_in_progress = False
                             self.retry_after_auth = None
+                            self.clear_token_cache()
+                            # --- PATCH: on attend le prochain poll ---
+                            self.next_poll_allowed = time.time() + (15 * 60)
                             return
 
                     Domoticz.Debug(_("Boiler ID : ") + str(self.boilerID))
@@ -707,6 +789,8 @@ class FrisquetConnectPlugin:
                     # Sécurité : payload attendu
                     if not self.incomingPayload or "zones" not in self.incomingPayload:
                         Domoticz.Error(_("Invalid payload for getFrisquetData (missing 'zones')"))
+                        # --- PATCH: pause jusqu'au prochain poll ---
+                        self.next_poll_allowed = time.time() + (15 * 60)
                         return
 
                     self.createDeviceboiler()
@@ -721,6 +805,8 @@ class FrisquetConnectPlugin:
                 case "getFrisquetEnergy":
                     if not self.incomingPayload:
                         Domoticz.Error(_("Empty payload for getFrisquetEnergy"))
+                        # --- PATCH: pause jusqu'au prochain poll ---
+                        self.next_poll_allowed = time.time() + (15 * 60)
                         return
                     self.updateEnergyFromFrisquet(self.incomingPayload)
 
@@ -740,12 +826,23 @@ class FrisquetConnectPlugin:
     def onCommand(self, Unit, Command, Level, Hue):
         Domoticz.Debug(_("onCommand called for Unit %(unit)d : Parameter '%(param)s', Level:  %(level)d") % {"unit": Unit, "param": str(Command), "level": Level})
         device = Devices[Unit]
-        if device.Type == 242 or device.Type == 244:  #à conserver?
+
+        # --- PATCH: si on est en cooldown suite à erreur, on n'envoie rien ---
+        if time.time() < self.next_poll_allowed:
+            Domoticz.Log(_("WARNING: Skip push (cooldown active)"))
+            return
+
+        # --- PATCH: s'assure d'avoir un token valide avant d'envoyer ---
+        if not self.ensure_token():
+            Domoticz.Log(_("WARNING: Skip push (token not ready)"))
+            return
+
+        if device.Type == 242 or device.Type == 244:  # à conserver?
             self.pushUpdateToFrisquet(Unit, Level)
             match device.Type:
-                case 242:  #setpoint
+                case 242:  # setpoint
                     nValue = 0
-                case 244:  #switch selector
+                case 244:  # switch selector
                     nValue = self.getValue(Unit, "nValue", Level)
             Domoticz.Debug(_("Updating %(name)s with nValue %(nvalue)d and sValue %(svalue)s") % {"name": device.Name, "nvalue": nValue, "svalue": str(Level)})
             device.Update(nValue=nValue, sValue=str(Level))
@@ -758,6 +855,10 @@ class FrisquetConnectPlugin:
 
     def onHeartbeat(self):
         if not self.active:  # pb avec le numéro de chaudiere
+            return
+
+        # --- PATCH: si on est en pause suite à erreur, on attend ---
+        if time.time() < self.next_poll_allowed:
             return
 
         now = datetime.now()
