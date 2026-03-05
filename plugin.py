@@ -160,7 +160,7 @@ class FrisquetConnectPlugin:
 
         self.auth_in_progress = True
         self.next_auth_allowed = time.time() + 60  # cooldown 60s
-        Domoticz.Debug(_("Token absent/trop ancien -> ré-authentification"))
+        Domoticz.Status(_("Token absent/trop ancien -> ré-authentification"))
         self.connectToFrisquet()
         return False
 
@@ -590,7 +590,7 @@ class FrisquetConnectPlugin:
         Domoticz.Debug(_("onConnect started for  : ") + str(Connection.Name))
 
         if (Status != 0):
-            Domoticz.Log(_("WARNING: Failed to connect (%(status)s) for %(name)s: %(error)s") % {
+            Domoticz.Status(_("WARNING: Failed to connect (%(status)s) for %(name)s: %(error)s") % {
                 "status": str(Status),
                 "name": str(Connection.Name),
                 "error": str(Description)
@@ -690,7 +690,7 @@ class FrisquetConnectPlugin:
                     return
                 else:
                     # Token refusé côté serveur -> on ré-auth puis on relancera le GET
-                    Domoticz.Log(_("Access denied (%d) on %s: token expired/invalid -> re-auth") % (Status, Connection.Name))
+                    Domoticz.Status(_("Access denied (%d) on %s: token expired/invalid -> re-auth") % (Status, Connection.Name))
                     self.auth_token = None
                     self.token_expiry = 0
                     self.token_obtained_at = 0
@@ -722,7 +722,7 @@ class FrisquetConnectPlugin:
                         "name": Connection.Name
                     })
                 else:
-                    Domoticz.Log(_("Server send an error %d for %s") % (Status, Connection.Name))
+                    Domoticz.Status(_("Server send an error %d for %s") % (Status, Connection.Name))
 
                 # --- PATCH: on attend le prochain poll (15 min) ---
                 Domoticz.Log(_("WARNING: HTTP error %d on %s -> pause until next poll") % (Status, Connection.Name))
@@ -752,7 +752,7 @@ class FrisquetConnectPlugin:
                     self.save_token_cache()
 
                     token_str = str(self.auth_token or "")
-                    Domoticz.Debug(_("token received (masked): ...%(suffix)s (len=%(ln)d)") % {
+                    Domoticz.Status(_("token received (masked): ...%(suffix)s (len=%(ln)d)") % {
                         "suffix": token_str[-6:] if len(token_str) >= 6 else token_str,
                         "ln": len(token_str)
                     })
