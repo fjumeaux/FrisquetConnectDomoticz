@@ -865,15 +865,14 @@ class FrisquetConnectPlugin:
         quarter = (now.minute // 15) * 15  # 0, 15, 30, 45
         slot_id = now.strftime("%Y-%m-%d %H:") + f"{quarter:02d}"
 
-        # On ne poll qu'au tout début du quart d'heure à + 10s (sur une fenêtre de 10 secondes)
-        if now.minute % 15 != 0:
-            return
-        if now.second < 10 or now.second >= 20:
-            return
-
-        # anti-double déclenchement (si Domoticz appelle 2 fois dans la fenêtre)
+        # on poll une seule fois par quart d'heure
         if self.last_quarter_polled == slot_id:
             return
+
+        # on n'agit qu'aux minutes 00/15/30/45
+        if now.minute % 15 != 0:
+            return
+
         self.last_quarter_polled = slot_id
 
         Domoticz.Status("Interrogation API Frisquet")
