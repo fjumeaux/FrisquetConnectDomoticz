@@ -617,30 +617,65 @@ class FrisquetConnectPlugin:
                     },
                     'Data': self.pendingPayload
                 }
+
             case "getFrisquetData":
+                if not self.boilerID or not self.auth_token:
+                    Domoticz.Error(_("Missing boilerID or auth token for getFrisquetData"))
+                    try:
+                        Connection.Disconnect()
+                    except Exception:
+                        pass
+                    return
+
                 sendData = {
                     'Verb': 'GET',
-                    'URL': const.SITE_API + '/' + self.boilerID + '?token=' + self.auth_token,
+                    'URL': const.SITE_API + '/' + str(self.boilerID) + '?token=' + str(self.auth_token),
                     'Headers': {
                         'Connection': 'keep-alive',
                         'Accept': '*/*',
                         'Host': const.HOST
                     }
                 }
+
             case "getFrisquetEnergy":
+                if not self.boilerID or not self.auth_token:
+                    Domoticz.Error(_("Missing boilerID or auth token for getFrisquetEnergy"))
+                    try:
+                        Connection.Disconnect()
+                    except Exception:
+                        pass
+                    return
+
                 sendData = {
                     'Verb': 'GET',
-                    'URL': const.SITE_API + '/' + self.boilerID + '/conso?token=' + self.auth_token + "&types[]=CHF&types[]=SAN",
+                    'URL': const.SITE_API + '/' + str(self.boilerID) + '/conso?token=' + str(self.auth_token) + "&types[]=CHF&types[]=SAN",
                     'Headers': {
                         'Connection': 'keep-alive',
                         'Accept': '*/*',
                         'Host': const.HOST
                     }
                 }
+
             case "pushUpdateToFrisquet":
+                if not self.boilerID or not self.auth_token:
+                    Domoticz.Error(_("Missing boilerID or auth token for pushUpdateToFrisquet"))
+                    try:
+                        Connection.Disconnect()
+                    except Exception:
+                        pass
+                    return
+
+                if not self.pendingPayload:
+                    Domoticz.Error(_("Missing payload for pushUpdateToFrisquet"))
+                    try:
+                        Connection.Disconnect()
+                    except Exception:
+                        pass
+                    return
+
                 sendData = {
                     'Verb': 'POST',
-                    'URL': const.ORDRES_API + '/' + self.boilerID + '?token=' + self.auth_token,
+                    'URL': const.ORDRES_API + '/' + str(self.boilerID) + '?token=' + str(self.auth_token),
                     'Headers': {
                         'Content-Type': 'application/json',
                         'Connection': 'keep-alive',
@@ -649,12 +684,21 @@ class FrisquetConnectPlugin:
                     },
                     'Data': self.pendingPayload
                 }
+
             case _:
                 Domoticz.Error(_("Unknown connection"))
+                try:
+                    Connection.Disconnect()
+                except Exception:
+                    pass
                 return
 
-        Domoticz.Debug(_("Method : %(method)s , URL : %(url)s") % {"method": str(sendData["Verb"]), "url": str(sendData["URL"])})
+        Domoticz.Debug(_("Method : %(method)s , URL : %(url)s") % {
+            "method": str(sendData["Verb"]),
+            "url": str(sendData["URL"])
+        })
         Connection.Send(sendData)
+        
 
     def onMessage(self, Connection, Data):
         Domoticz.Debug(_("onMessage called for ") + str(Connection.Name))
