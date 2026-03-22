@@ -112,11 +112,20 @@ class FrisquetConnectPlugin:
                     data = json.load(f)
                 self.auth_token = data.get("token")
                 self.token_obtained_at = float(data.get("obtained_at", 0))
+
+                # recharge aussi le boilerID si Mode1 n'est pas renseigné
+                if not self.boilerID:
+                    self.boilerID = data.get("boiler_id")
+
                 if self.auth_token:
                     token_str = str(self.auth_token or "")
                     Domoticz.Debug(_("Token loaded from cache (masked): ...%(suffix)s") % {
                         "suffix": token_str[-6:] if len(token_str) >= 6 else token_str
                     })
+
+                if self.boilerID:
+                    Domoticz.Debug(_("Boiler ID loaded from cache: %s") % str(self.boilerID))
+
         except Exception as e:
             Domoticz.Debug(_("Token cache read failed: %s") % str(e))
 
@@ -124,7 +133,11 @@ class FrisquetConnectPlugin:
         if not self.token_cache_file:
             return
         try:
-            data = {"token": self.auth_token, "obtained_at": self.token_obtained_at}
+            data = {
+                "token": self.auth_token,
+                "obtained_at": self.token_obtained_at,
+                "boiler_id": self.boilerID
+            }
             with open(self.token_cache_file, "w") as f:
                 json.dump(data, f)
         except Exception as e:
@@ -143,14 +156,19 @@ class FrisquetConnectPlugin:
         if not self.auth_token:
             return False
         return (time.time() - self.token_obtained_at) < self.token_ttl_safe
-
+    
     def ensure_token(self, want_retry=None):
-        if self.is_token_valid():
+        # token valide ET boilerID connu => OK
+        if self.is_token_valid() and self.boilerID:
             return True
 
         # on mémorise l'action à relancer après auth
         if want_retry:
             self.retry_after_auth = want_retry
+
+        # si token valide mais boilerID absent, il faut quand même refaire une auth
+        if self.is_token_valid() and not self.boilerID:
+            Domoticz.Status(_("Token valide mais boilerID absent -> ré-authentification nécessaire"))
 
         # anti-spam + éviter auth concurrentes
         if self.auth_in_progress:
@@ -160,7 +178,7 @@ class FrisquetConnectPlugin:
 
         self.auth_in_progress = True
         self.next_auth_allowed = time.time() + 60  # cooldown 60s
-        Domoticz.Status(_("Token absent/trop ancien -> ré-authentification"))
+        Domoticz.Status(_("Token absent/trop ancien ou boilerID manquant -> ré-authentification"))
         self.connectToFrisquet()
         return False
 
@@ -580,7 +598,12 @@ class FrisquetConnectPlugin:
         self.token_cache_file = os.path.join(Parameters["HomeFolder"], "frisquet_token_cache.json")
         self.load_token_cache()
 
-        # Démarrage: on force une auth si token absent/invalide (et on autorise la requête getFrisquetData dès que token reçu)
+        # si Mode1 n'est pas renseigné et que le boilerID n'a pas pu être relu,
+        # il faut forcer une auth même si le token cache est encore valide
+        if not self.boilerID:
+            Domoticz.Status(_("boilerID absent au démarrage -> authentification requise"))
+
+        # Démarrage: auth si token absent/invalide OU boilerID absent
         self.ensure_token(want_retry="getFrisquetData")
 
     def onStop(self):
