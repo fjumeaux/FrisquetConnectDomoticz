@@ -815,9 +815,6 @@ class FrisquetConnectPlugin:
                     self.token_expiry = 0
                     self.auth_in_progress = False
 
-                    # --- PATCH: persist token ---
-                    self.save_token_cache()
-
                     token_str = str(self.auth_token or "")
                     Domoticz.Status(_("token received (masked): ...%(suffix)s (len=%(ln)d)") % {
                         "suffix": token_str[-6:] if len(token_str) >= 6 else token_str,
@@ -839,6 +836,9 @@ class FrisquetConnectPlugin:
                             return
 
                     Domoticz.Debug(_("Boiler ID : ") + str(self.boilerID))
+
+                    # --- PATCH: persist token + boilerID seulement maintenant ---
+                    self.save_token_cache()
 
                     # Rejoue automatiquement la requête qui attendait un nouveau token
                     if self.retry_after_auth == "getFrisquetData":
