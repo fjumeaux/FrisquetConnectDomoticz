@@ -940,14 +940,17 @@ class FrisquetConnectPlugin:
         if now.minute % 15 != 0:
             return
 
-        self.last_quarter_polled = slot_id
-
         Domoticz.Status("Interrogation API Frisquet")
 
         # Proactif : si token trop vieux, on auth et on relancera getFrisquetData dès que l'auth aura réussi
         if self.ensure_token(want_retry="getFrisquetData"):
             if self.boilerID:
                 self.getFrisquetData()
+                self.last_quarter_polled = slot_id
+        else:
+            # si une auth est partie, on considère le slot comme pris en charge
+            if self.auth_in_progress or self.retry_after_auth == "getFrisquetData":
+                self.last_quarter_polled = slot_id
 
 
 global _plugin
