@@ -319,11 +319,13 @@ class FrisquetConnectPlugin:
             if device_dero.nValue > 0:
                 Domoticz.Debug(_("Updating %s with value 0") % str(device_dero.Name))
                 device_dero.Update(nValue=0, sValue="0")
+                Domoticz.Status("Device {} mis à jour".format(device_dero.Name))            
             return
         sValue_dero = str(next((m["value_in"] for m in const.MODE_DERO if m["value_out"] == str(zone["carac_zone"]["MODE"])), None))
         Domoticz.Debug(_("Switch Selector value is %s, value to update is %d") % (str(zone["carac_zone"]["MODE"]), sValue_dero))
         if device_dero.sValue != sValue_dero:
             device_dero.Update(nValue=1, sValue=sValue_dero)
+            Domoticz.Status("Device {} mis à jour".format(device_dero.Name))        
         return
 
     def getenergyFromJSON(self, data, type_energy, month, year):
@@ -440,6 +442,7 @@ class FrisquetConnectPlugin:
             Domoticz.Debug(_("For %(name)s , total energy consumption of %(te)d KWh was stored, difference of %(diff)d KWh") % {"name": str(device.Name), "te": energy_total, "diff": energy_yesterday})
             self.writeEnergy(type_energy, str(date_yesterday), energy_yesterday, energy_total)
             device.Update(nValue=0, sValue="-1;" + str(energy_yesterday) + ";" + str(date_yesterday))
+            Domoticz.Status("Device {} mis à jour".format(device.Name))    
 
     def InitEnergyFromFrisquet(self, device_init, incomingPayload):
         device = Devices[int(device_init[0])]
@@ -457,6 +460,7 @@ class FrisquetConnectPlugin:
                 energy_total = energy_total * 1000  # frisquet fourni des KWh, domoticz attend des Wh
                 Domoticz.Debug(_("For %(name)s , total energy consumption is %(te)d KWh at %(date)s") % {"name": str(device.Name), "te": str(energy_total), "date": str(date_trt.strftime("%Y-%m-%d"))})
                 device.Update(nValue=0, sValue="-1;" + str(energy_total) + ";" + str(date_trt))
+                Domoticz.Status("Device {} mis à jour".format(device.Name))            
             else:
                 Domoticz.Debug(_("Nothing to update for %(name)s at %(date)s") % {"name": str(device.Name), "date": str(date_trt.strftime("%Y-%m-%d"))})
             date_trt += relativedelta(months=1, day=31)
@@ -484,6 +488,7 @@ class FrisquetConnectPlugin:
                 Domoticz.Debug(_("Updating %(name)s to value %(value)s") % {"name": str(device.Name), "value": str(sValue)})
                 if device.Unit in Devices:
                     device.Update(nValue=int(nValue), sValue=str(sValue))
+                    Domoticz.Status("Device {} mis à jour".format(device.Name))    
 
     def updateDeviceFromFrisquetboiler(self):
         for device_boiler in const.C_BOILER:
@@ -531,6 +536,7 @@ class FrisquetConnectPlugin:
                 Domoticz.Debug(_("Updating %(name)s to value %(value)s") % {"name": str(device.Name), "value": str(sValue)})
                 if device.Unit in Devices:
                     device.Update(nValue=int(nValue), sValue=str(sValue))
+                    Domoticz.Status("Device {} mis à jour".format(device.Name))    
 
     def createDeviceByZone(self, zone):
         # Zone 1 : 11 TAMB, 12 CONS_CONF, 13 CONS_RED, 14, CONS_HG, 15 MODE PERMANENT, 16 MODE ACTUEL
