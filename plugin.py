@@ -940,7 +940,7 @@ class FrisquetConnectPlugin:
         if now.minute % 15 != 0:
             return
 
-        Domoticz.Status("Interrogation API Frisquet")
+        Domoticz.Status(_("Interrogation API Frisquet - âge du token : %s h") % self.get_token_age_hours_str())
 
         # Proactif : si token trop vieux, on auth et on relancera getFrisquetData dès que l'auth aura réussi
         if self.ensure_token(want_retry="getFrisquetData"):
