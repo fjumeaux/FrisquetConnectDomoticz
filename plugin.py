@@ -919,6 +919,7 @@ class FrisquetConnectPlugin:
                     nValue = self.getValue(Unit, "nValue", Level)
             Domoticz.Debug(_("Updating %(name)s with nValue %(nvalue)d and sValue %(svalue)s") % {"name": device.Name, "nvalue": nValue, "svalue": str(Level)})
             device.Update(nValue=nValue, sValue=str(Level))
+            Domoticz.Status("Device {} mis à jour".format(device.Name))    
 
     def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
         Domoticz.Debug("Notification: " + Name + "," + Subject + "," + Text + "," + Status + "," + str(Priority) + "," + Sound + "," + ImageFile)
