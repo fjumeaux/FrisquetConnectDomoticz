@@ -865,7 +865,9 @@ class FrisquetConnectPlugin:
                         # --- PATCH: pause jusqu'au prochain poll ---
                         self.next_poll_allowed = time.time() + (15 * 60)
                         return
-
+                    # Debug log à enlever dès que ça fonctionne
+                    Domoticz.Status("JSON Frisquet brut : {}".format(self.incomingPayload))  
+                    #
                     self.createDeviceboiler()
                     self.updateDeviceFromFrisquetboiler()
 
