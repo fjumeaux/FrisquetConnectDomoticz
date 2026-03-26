@@ -660,9 +660,14 @@ class FrisquetConnectPlugin:
                     'Verb': 'GET',
                     'URL': const.SITE_API + '/' + str(self.boilerID) + '?token=' + str(self.auth_token),
                     'Headers': {
-                        'Connection': 'keep-alive',
-                        'Accept': '*/*',
-                        'Host': const.HOST
+                        'Accept-Language': 'FR',
+                        'Android-Version': '2.8.1',
+                        'Content-Type': 'application/json; charset=UTF-8',
+                        'Host': const.HOST,
+                        'Connection': 'Keep-Alive',
+                        'Accept-Encoding': 'gzip',
+                        'User-Agent': 'okhttp/4.12.0',
+                        'Accept': '*/*'
                     }
                 }
 
