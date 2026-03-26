@@ -466,12 +466,77 @@ class FrisquetConnectPlugin:
             date_trt += relativedelta(months=1, day=31)
         del self.initializeEnergy[0]
 
+    def getProgrammedModeCode(self, zone):
+        try:
+            # jour Python : lundi=0 ... dimanche=6
+            # jour Frisquet : dimanche=0 ... samedi=6
+            now = datetime.now()
+            frisquet_day = (now.weekday() + 1) % 7
+
+            # 48 plages de 30 min
+            slot_index = now.hour * 2 + (1 if now.minute >= 30 else 0)
+
+            for prog in zone.get("programmation", []):
+                if prog.get("jour") == frisquet_day:
+                    plages = prog.get("plages", [])
+                    if slot_index < len(plages):
+                        # 1 = Confort / 0 = Réduit
+                        return 6 if plages[slot_index] == 1 else 7
+
+            Domoticz.Debug(_("No matching programmation found for zone %(zone)s / day %(day)s / slot %(slot)s") % {
+                "zone": str(zone.get("numero")),
+                "day": str(frisquet_day),
+                "slot": str(slot_index)
+            })
+            return zone["carac_zone"].get("MODE")
+
+        except Exception as e:
+            Domoticz.Debug(_("Error while computing programmed mode: %s") % str(e))
+            return zone["carac_zone"].get("MODE")
+
+    
     def updateDeviceFromFrisquetByZone(self, zone):
         num_zone = str(zone["numero"])
         for device_zone in const.C_ZONE:
             device = Devices[int(num_zone + device_zone["unit"])]
-            value_out = zone["carac_zone"][device_zone["mode"]]
-            Domoticz.Debug(_("Updating %(name)s , incoming value : %(value)s") % {"name": str(device.Name), "value": str(value_out)})
+
+            # Cas particulier : MODE
+            if device_zone["mode"] == "MODE":
+                selecteur = zone["carac_zone"].get("SELECTEUR")
+                dero = zone["carac_zone"].get("DERO", False)
+
+                if dero:
+                    # en dérogation, on garde le MODE renvoyé par l'API
+                    value_out = zone["carac_zone"].get("MODE")
+                    Domoticz.Status(
+                        "Zone {} MODE via API (dérogation active) : {}".format(
+                            num_zone, value_out
+                        )
+                    )
+                elif selecteur == 5:
+                    # AUTO : on calcule le mode à partir de la programmation
+                    value_out = self.getProgrammedModeCode(zone)
+                    Domoticz.Status(
+                        "Zone {} MODE calculé via programmation : {}".format(
+                            num_zone, value_out
+                        )
+                    )
+                else:
+                    # hors AUTO : on garde le MODE renvoyé par l'API
+                    value_out = zone["carac_zone"].get("MODE")
+                    Domoticz.Status(
+                        "Zone {} MODE via API (hors AUTO) : {}".format(
+                            num_zone, value_out
+                        )
+                    )
+            else:
+                value_out = zone["carac_zone"][device_zone["mode"]]
+
+            Domoticz.Debug(_("Updating %(name)s , incoming value : %(value)s") % {
+                "name": str(device.Name),
+                "value": str(value_out)
+            })
+
             if getattr(const, device_zone["mode"], None) == None:
                 if isinstance(value_out, bool):
                     sValue = str(value_out)
@@ -482,13 +547,18 @@ class FrisquetConnectPlugin:
             else:
                 sValue = next((m["value_in"] for m in getattr(const, device_zone["mode"], None) if m["value_out"] == str(value_out)), None)
                 nValue = next((m["nValue"] for m in getattr(const, device_zone["mode"], None) if m["value_out"] == str(value_out)), None)
+
             if device_zone["mode"] == "DERO":
                 self.updateModeDero(zone, value_out)
+
             if str(device.sValue) != str(sValue) or self.deviceUpdatedMoreThan(device, 300):
-                Domoticz.Debug(_("Updating %(name)s to value %(value)s") % {"name": str(device.Name), "value": str(sValue)})
+                Domoticz.Debug(_("Updating %(name)s to value %(value)s") % {
+                    "name": str(device.Name),
+                    "value": str(sValue)
+                })
                 if device.Unit in Devices:
                     device.Update(nValue=int(nValue), sValue=str(sValue))
-                    Domoticz.Status("Device {} mis à jour".format(device.Name))    
+                    Domoticz.Status("Device {} mis à jour".format(device.Name))
 
     def updateDeviceFromFrisquetboiler(self):
         for device_boiler in const.C_BOILER:
